@@ -16,21 +16,15 @@
 
 
     <dependencies>
-        <!-- Discord API -->
-        <!-- https://github.com/discord-jda/JDA -->
+        <!-- logback for JDA (required) -->
+        <!-- Source: https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
         <dependency>
-            <groupId>net.dv8tion</groupId>
-            <artifactId>JDA</artifactId>
-            <version>5.2.2</version>
-            <exclusions><!-- reduce size -->
-                <exclusion>
-                    <groupId>club.minnced</groupId>
-                    <artifactId>opus-java</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.18</version>
+            <scope>compile</scope>
         </dependency>
 
-        <!-- logback for JDA (required) -->
         <!-- https://jda.wiki/setup/logging/#__tabbed_1_2 -->
         <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
         <dependency>
@@ -104,7 +98,7 @@
                             </descriptorRefs>
                             <archive>
                                 <manifestEntries>
-                                    <Main-Class>org.pcMonitor.Main</Main-Class> <!-- Set your main class here -->
+                                    <Main-Class>org.lightning.serverMonitor.Main</Main-Class> <!-- Set your main class here -->
                                 </manifestEntries>
                             </archive>
                         </configuration>
