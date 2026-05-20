@@ -1,0 +1,52 @@
+package org.serverMonitor.javalinWebapp;
+
+import io.javalin.Javalin;
+import io.javalin.websocket.WsContext;
+import org.serverMonitor.utils.PCStatsUtils;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class WebApp {
+    public static void main(String[] args) {
+        Set<WsContext> clients = ConcurrentHashMap.newKeySet();
+        AtomicInteger counter = new AtomicInteger();
+
+        Javalin app = Javalin.create(config -> {
+            config.staticFiles.add("/public"); // serves /public/index.html
+        }).start(8080);
+
+        app.ws("/ws", ws -> {
+            ws.onConnect(ctx -> {
+                clients.add(ctx);
+                System.out.println("Connected: ");
+            });
+            ws.onClose(ctx -> {
+                clients.remove(ctx);
+                System.out.println("Disconnected: ");
+            });
+        });
+
+        // Schedule counter updates every second
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+            clients.forEach(session -> {
+                session.send("temp\n" + PCStatsUtils.getCpuTempCelcius());
+                session.send("cpu-load\n" + PCStatsUtils.getCpuLoad());
+                session.send("ram\n" + PCStatsUtils.getOSRam());
+            });
+        }, 0, 2, TimeUnit.SECONDS);
+
+
+//
+//    @Scheduled(fixedRate = 10000)
+//    public void pushLiveData2() {
+//        template.convertAndSend("/topic/status/cpu-temp-history",
+//                Main.tempMonitor.getTimeOverTemp().replaceAll("\n", " <br/> "));
+//    }
+
+
+    }
+}

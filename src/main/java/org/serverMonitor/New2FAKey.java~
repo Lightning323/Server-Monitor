@@ -1,0 +1,29 @@
+package org.example;
+
+import org.example.utils.GoogleAuthenticator;
+
+import java.io.File;
+
+import static org.example.Main.VERSION;
+
+public class New2FAKey {
+
+    public static void main(String[] args) {
+        System.out.println("Version: " + VERSION);
+        String email = "sam.p.w524@gmail.com";
+
+        try {
+            String key = GoogleAuthenticator.generateSecretKey();
+            String qrCodeUrl = GoogleAuthenticator.getQRCodeUrl(email, key, GoogleAuthenticator.ISSUER);
+            System.out.println("Secret key: " + key);
+            new File("temp").mkdirs();
+            GoogleAuthenticator.generateQRCode(qrCodeUrl, "temp\\qrcode.png");
+            while (true) {
+                System.out.println("OTC (test): " + GoogleAuthenticator.getTOTP(key));
+                Thread.sleep(10000);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
