@@ -9,13 +9,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class AppSettings {
+public class Settings {
 
 
     public String SERVER_NAME = "Server";
 
     //Webapp
     public int WEBAPP_LOCALHOST_PORT = 8080;
+
+    //Notifications
+    public String DISCORD_WEBHOOK_URL = "password";
 
     //Sensors
     public int SENSORS_UPDATE_MS = 5000;
@@ -39,7 +42,7 @@ public class AppSettings {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path SETTINGS_PATH = Paths.get(System.getProperty("user.dir"), "settings.json");
 
-    public static void save(AppSettings settings) {
+    public static void save(Settings settings) {
         try (Writer writer = Files.newBufferedWriter(SETTINGS_PATH)) {
             GSON.toJson(settings, writer);
         } catch (Throwable e) {
@@ -47,19 +50,19 @@ public class AppSettings {
         }
     }
 
-    public static AppSettings load() {
+    public static Settings load() {
         System.out.println("Loading settings from "+SETTINGS_PATH.toString());
         if (Files.exists(SETTINGS_PATH)) {
             try (Reader reader = Files.newBufferedReader(SETTINGS_PATH)) {
-                return GSON.fromJson(reader, (Type) AppSettings.class);
+                return GSON.fromJson(reader, (Type) Settings.class);
 
             } catch (Throwable e) {
                 System.err.println("Error loading settings: " + e.getMessage());
             }
         } else {
-            save(new AppSettings()); // Save defaults if no file
+            save(new Settings()); // Save defaults if no file
         }
-        return new AppSettings();
+        return new Settings();
     }
 
 }

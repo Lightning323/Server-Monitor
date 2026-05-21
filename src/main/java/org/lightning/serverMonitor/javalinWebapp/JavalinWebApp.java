@@ -54,11 +54,6 @@ public class JavalinWebApp {
         ctx.send(history.getRecordsAsString("history" + DELIMITER, filename));
     }
 
-    private void sendSystemInfo(WsContext session) {
-        session.send("ram" + DELIMITER + Platform.SINGLETON.getOSRamUsage());
-        session.send("cpu-temp-history" + DELIMITER + Main.tempMonitor.getTimeOverTemp());
-    }
-
     public void start() {
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add("/public"); // serves /public/index.html
@@ -66,7 +61,9 @@ public class JavalinWebApp {
         System.out.println("\n\n\nStarted webapp on port " + Main.settings.WEBAPP_LOCALHOST_PORT + "\n\n\n");
 
         app.ws("/ws", ws -> {
+
                     ws.onConnect(ctx -> {
+
                         System.out.println("Connected to client: " + ctx.toString());
                         ctx.send("app-version" + DELIMITER + Main.APP_VERSION);
                         ctx.send("server-name" + DELIMITER + Main.settings.SERVER_NAME);
@@ -90,7 +87,8 @@ public class JavalinWebApp {
 //                        System.out.println("start: " + start + " end: " + end + " step: " + step);
                         String liveData = history.getRecordsAsString(LIVE_DATA_HEADER, start, end, step);
                         ctx.send(liveData);
-                        sendSystemInfo(ctx);
+                        ctx.send("ram" + DELIMITER + Platform.SINGLETON.getOSRamUsage());
+                        ctx.send("cpu-temp-history" + DELIMITER + Main.tempMonitor.getTimeOverTemp());
                     });
                     ws.onClose(ctx -> {
                         System.out.println("Disconnected: " + ctx.toString());
@@ -115,18 +113,7 @@ public class JavalinWebApp {
                         }
                     });
                 }
-
-
         );
-
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-            clients.forEach(session -> {
-                session.sendPing();
-                sendSystemInfo(session);
-            });
-        }, 0, 60, TimeUnit.SECONDS);
-
-
     }
 
     private String getSortedHistoryRecords() {

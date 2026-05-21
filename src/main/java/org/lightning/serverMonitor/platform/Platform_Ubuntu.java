@@ -133,7 +133,7 @@ class Platform_Ubuntu extends Platform {
                     }
                 }
             } catch (IOException e) {
-                LOGGER.error("Failed to get CPU load", e);
+                Main.LOGGER.error("Failed to get CPU load", e);
             } finally {
                 process.destroy();
             }

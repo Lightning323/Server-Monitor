@@ -1,8 +1,10 @@
 package org.lightning.serverMonitor;
 
-import org.lightning.serverMonitor.monitor.temprature.SystemMonitorService;
+import org.lightning.serverMonitor.monitor.SystemMonitorService;
 import org.lightning.serverMonitor.javalinWebapp.JavalinWebApp;
 import org.lightning.serverMonitor.platform.Platform;
+import org.lightning.serverMonitor.utils.ExtendedLogger;
+import org.lightning.serverMonitor.utils.MiscUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,18 +27,24 @@ public class Main {
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static final Logger LOGGER = LoggerFactory.getLogger("ServerMonitor");
+    public static ExtendedLogger LOGGER = new ExtendedLogger();
     public static TaskbarTray taskbarTray;
 
     public static long minutesSinceAwake = 0;
-    public static AppSettings settings = AppSettings.load();
+    public static Settings settings = Settings.load();
 
     public static JavalinWebApp webApp = new JavalinWebApp();
     public static SystemMonitorService tempMonitor = new SystemMonitorService(Platform.SINGLETON, webApp);
 
 
     public static void main(String[] args) {
+        long startTime = System.currentTimeMillis();
         System.out.println("Version: " + APP_VERSION);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            LOGGER.notification("shutting down; Runtime: " + MiscUtils.convertMsToHMS(System.currentTimeMillis() - startTime));
+        }));
+
         taskbarTray = new TaskbarTray();
 
         //Set the max frequency on startup

@@ -1,4 +1,4 @@
-package org.lightning.serverMonitor.monitor.temprature;
+package org.lightning.serverMonitor.monitor;
 
 import org.lightning.serverMonitor.Main;
 import org.lightning.serverMonitor.platform.FrequencyPolicy;

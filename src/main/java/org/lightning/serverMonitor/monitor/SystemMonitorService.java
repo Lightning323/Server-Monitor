@@ -1,4 +1,4 @@
-package org.lightning.serverMonitor.monitor.temprature;
+package org.lightning.serverMonitor.monitor;
 
 import org.lightning.serverMonitor.Main;
 import org.lightning.serverMonitor.javalinWebapp.JavalinWebApp;
@@ -97,7 +97,7 @@ public class SystemMonitorService {
                 TempratureProtectionApplet.checkTemp(cpuTemp);
 
                 index++;
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (Main.settings.PROTECTION_SHUTDOWN_ON_TEMP_ERROR) {
                     Platform.SINGLETON.shutdown("Error with CPU temp monitor: " + e.getMessage());
                 } else {
