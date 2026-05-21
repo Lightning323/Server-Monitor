@@ -19,6 +19,8 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.lightning.serverMonitor.Main.LOGGER;
+
 class Platform_Ubuntu extends Platform {
 
 
@@ -59,6 +61,11 @@ class Platform_Ubuntu extends Platform {
         return "Unknown" + processLoad;
     }
 
+    //TODO: There are 3 ways to get CPU load:
+    // 1. Using top command
+    // 2. Using /proc/stat
+    // 3. Using OperatingSystemMXBean
+    //We need to make a decision on which one to use to simplify the code
 
     private long[] lastStats = null;
     private long lastTimestamp = 0;
@@ -107,6 +114,35 @@ class Platform_Ubuntu extends Platform {
         return new long[]{idleTime, totalTime};
     }
 
+
+    public double getCPULoad2() {
+        // We invoke the shell (/bin/sh) to handle the pipes (|) and command features
+        String command = "top -bn2 -d 0.1 | grep \"Cpu(s)\" | tail -n1 | awk '{print 100 - $8}'";
+        ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-c", command);
+
+        try {
+            Process process = pb.start();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line = reader.readLine();
+                if (line != null && !line.isEmpty()) {
+                    try {
+                        // Parse the output (a single number like "12.5")
+                        return Double.parseDouble(line.trim());
+                    } catch (NumberFormatException e) {
+                        return -1.0;
+                    }
+                }
+            } catch (IOException e) {
+                LOGGER.error("Failed to get CPU load", e);
+            } finally {
+                process.destroy();
+            }
+        } catch (IOException e) {
+            LOGGER.error("Failed to get CPU load", e);
+        }
+        return -1.0;
+    }
+
     public double getImmediateCPULoad() {
         OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         double load = osBean.getCpuLoad(); // Returns % as 0.0 to 1.0
@@ -149,7 +185,7 @@ class Platform_Ubuntu extends Platform {
 
             return diff.toMillis();
         } catch (IOException e) {
-            Main.LOGGER.error( "Failed to get awake millis",e);
+            LOGGER.error("Failed to get awake millis", e);
             return -1;
         }
     }
@@ -157,7 +193,7 @@ class Platform_Ubuntu extends Platform {
     @Override
     public boolean suspend(String reason) {
         if (super.suspend(reason)) {
-            Main.LOGGER.info("Suspending " + (reason == null ? "" : ": " + reason));
+            LOGGER.info("Suspending " + (reason == null ? "" : ": " + reason));
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
@@ -169,11 +205,11 @@ class Platform_Ubuntu extends Platform {
                     int exit = process.waitFor();
                     return exit == 0;
                 } catch (Throwable e) {
-                    Main.LOGGER.error("Failed to suspend",e);
+                    LOGGER.error("Failed to suspend", e);
                 }
             }
         }
-        Main.LOGGER.info("Refusing to suspend");
+        LOGGER.info("Refusing to suspend");
         return false;
     }
 
@@ -302,13 +338,13 @@ class Platform_Ubuntu extends Platform {
             return process.waitFor();
         } catch (Exception e) {
             str.accept("Error executing command: " + e.getMessage());
-            Main.LOGGER.info("Custom command failed: ```" + e.getMessage() + "```");
+            LOGGER.info("Custom command failed: ```" + e.getMessage() + "```");
         }
         return -1;
     }
 
     public void shutdown(String reason) {
-        Main.LOGGER.info("Shutting down" + (reason == null ? "" : ": " + reason));
+        LOGGER.info("Shutting down" + (reason == null ? "" : ": " + reason));
         if (Main.TEST_MODE) {
             System.exit(0);
         } else {
@@ -340,10 +376,10 @@ class Platform_Ubuntu extends Platform {
                         attempts++;
                     }
                 } catch (InterruptedException | IOException e) {
-                    Main.LOGGER.error("Error in shutdown attempt",e);
+                    LOGGER.error("Error in shutdown attempt", e);
                 }
             }
-            Main.LOGGER.info("Shutdown command might have failed. attempts: " + attempts + "\n`" + err + "`");
+            LOGGER.info("Shutdown command might have failed. attempts: " + attempts + "\n`" + err + "`");
         }
     }
 

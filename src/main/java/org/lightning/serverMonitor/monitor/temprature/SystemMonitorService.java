@@ -50,7 +50,6 @@ public class SystemMonitorService {
             try {
                 sensorData = LMSensors.read();
 //                System.out.println(sensorData);
-
 //                double cpuLoad = platform.getImmediateCPULoad();
                 double cpuLoad = platform.getCPULoad();
                 SensorProperty cpuTempProp = LMSensors.getSensorProperty(sensorData,
