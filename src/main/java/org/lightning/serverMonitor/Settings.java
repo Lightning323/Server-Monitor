@@ -15,10 +15,10 @@ public class Settings {
     public String SERVER_NAME = "Server";
 
     //Webapp
-    public int WEBAPP_LOCALHOST_PORT = 8080;
+    public int WEBAPP_LOCALHOST_PORT = 3000;
 
     //Notifications
-    public String DISCORD_WEBHOOK_URL = "password";
+    public String DISCORD_WEBHOOK_URL = null;
 
     //Sensors
     public int SENSORS_UPDATE_MS = 5000;
