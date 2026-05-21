@@ -1,4 +1,4 @@
-package org.lightning.serverMonitor.applets.temprature;
+package org.lightning.serverMonitor.monitor.temprature;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

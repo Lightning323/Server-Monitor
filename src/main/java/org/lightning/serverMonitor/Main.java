@@ -1,6 +1,6 @@
 package org.lightning.serverMonitor;
 
-import org.lightning.serverMonitor.applets.temprature.CPUTempMonitor;
+import org.lightning.serverMonitor.monitor.temprature.SystemMonitorService;
 import org.lightning.serverMonitor.javalinWebapp.JavalinWebApp;
 import org.lightning.serverMonitor.platform.Platform;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ public class Main {
     public static AppSettings settings = AppSettings.load();
 
     public static JavalinWebApp webApp = new JavalinWebApp();
-    public static CPUTempMonitor tempMonitor = new CPUTempMonitor(Platform.SINGLETON, webApp);
+    public static SystemMonitorService tempMonitor = new SystemMonitorService(Platform.SINGLETON, webApp);
 
 
     public static void main(String[] args) {

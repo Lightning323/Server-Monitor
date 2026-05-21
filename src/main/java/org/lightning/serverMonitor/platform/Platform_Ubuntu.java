@@ -6,6 +6,7 @@ import org.lightning.serverMonitor.CustomCommand;
 import org.lightning.serverMonitor.utils.MiscUtils;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
@@ -18,12 +19,9 @@ import java.util.regex.Pattern;
 
 class Platform_Ubuntu extends Platform {
 
-    CpuMonitorService cpuMonitorService;
 
     public Platform_Ubuntu() {
         super();
-        cpuMonitorService = new CpuMonitorService(5);
-        cpuMonitorService.start(Main.settings.SENSORS_UPDATE_MS);//Samples every second
     }
 
     /**
@@ -57,10 +55,6 @@ class Platform_Ubuntu extends Platform {
         } catch (Exception ignored) {
         }
         return "Unknown" + processLoad;
-    }
-
-    public double getImmediateCPULoad() {
-        return Math.round(cpuMonitorService.getSmoothedCpuLoad());
     }
 
     /**
@@ -239,11 +233,6 @@ class Platform_Ubuntu extends Platform {
         return "unknown";
     }
 
-    private static final String CPU_TEMP_CMD = "sensors";
-    private static final String CPU_TEMP_SENSOR_NAME = "k10temp-pci-00c3";
-    private static final String CPU_TEMP_SENSOR_PREFIX = "Tctl:";
-    private static final Pattern TEMP_PATTERN = Pattern.compile(CPU_TEMP_SENSOR_PREFIX + "\\s+\\+(\\d+\\.\\d+)");
-
     protected String[] setMaxFrequencyCommand(double minFrequencyMHZ, double maxFrequencyMHZ) {
         //sudo cpupower frequency-set -d 0 -u 0
         return new String[]{"bash", "-c", "sudo cpupower frequency-set -d " + minFrequencyMHZ + "MHz -u " + maxFrequencyMHZ + "MHz"};
@@ -275,38 +264,6 @@ class Platform_Ubuntu extends Platform {
             cacheFrequencyPolicy(frequencyPolicy);
             return frequencyPolicy;
         }
-    }
-
-    public double getCPUTempCelsius() {
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder("sensors");
-            Process process = processBuilder.start();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                boolean foundSensor = false;
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    if (foundSensor) {
-                        Matcher matcher = TEMP_PATTERN.matcher(line.trim());
-                        if (matcher.find()) {
-                            try {
-                                return Double.parseDouble(matcher.group(1));
-                            } catch (NumberFormatException e) {
-                                // Handle parsing error if needed
-                                return -1;
-                            }
-                        }
-                    } else if (line.trim().equals(CPU_TEMP_SENSOR_NAME)) {
-                        foundSensor = true;
-                        continue;
-                    }
-                }
-            } finally {
-                process.waitFor();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot read CPU temp", e);
-        }
-        return -1;
     }
 
     public int runAppCustomCommand(CustomCommand command, Consumer<String> str) {

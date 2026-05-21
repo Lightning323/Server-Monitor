@@ -46,8 +46,6 @@ public abstract class Platform {
 
     public abstract String getOSRamUsage();
 
-    public abstract double getCPUTempCelsius();
-
     public void shutdown(String reason) {
     }
 
@@ -97,16 +95,6 @@ public abstract class Platform {
     protected long pollAwakeMillis() {
         return -1;
     }
-
-    public String toString() {
-        return
-                "CPU temp C: " + getCPUTempCelsius() +
-                        "\nCPU load: " + getImmediateCPULoad() + "%" +
-                        "\n\nLoad info: " + getCPULoadStr() +
-                        "\nMemory: " + getOSRamUsage() +
-                        "\n\n" + getFrequencyPolicy().toString();
-    }
-
 
     public abstract FrequencyPolicy setMaxFrequencyMHZ(double maxFrequencyMHZ);
 

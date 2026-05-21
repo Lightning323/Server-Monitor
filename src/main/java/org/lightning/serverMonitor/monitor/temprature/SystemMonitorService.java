@@ -1,25 +1,31 @@
-package org.lightning.serverMonitor.applets.temprature;
+package org.lightning.serverMonitor.monitor.temprature;
 
 import org.lightning.serverMonitor.Main;
 import org.lightning.serverMonitor.javalinWebapp.JavalinWebApp;
 import org.lightning.serverMonitor.platform.Platform;
+import org.lightning.serverMonitor.platform.sensors.linux.LMSensors;
+import org.lightning.serverMonitor.platform.sensors.linux.SensorDevice;
+import org.lightning.serverMonitor.platform.sensors.linux.SensorProperty;
 import org.lightning.serverMonitor.utils.MiscUtils;
+import org.lightning.serverMonitor.utils.StringUtils;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class CPUTempMonitor {
+public class SystemMonitorService {
 
     private static long msOver45C, msOver50C, msOver55C, msOver60C, msOver65C, msOver70C, msOver75C, msOver80C, msOver85C, msOver90C;
 
     ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    Platform stats;
+    Platform platform;
     JavalinWebApp webApp;
     long index = 0;
+    List<SensorDevice> sensorData;
 
-    public CPUTempMonitor(Platform stats, JavalinWebApp webApp) {
-        this.stats = stats;
+    public SystemMonitorService(Platform stats, JavalinWebApp webApp) {
+        this.platform = stats;
         this.webApp = webApp;
     }
 
@@ -42,9 +48,17 @@ public class CPUTempMonitor {
         //A shceduler that runs every UPDATE_MS ms
         scheduler.scheduleAtFixedRate(() -> {
             try {
+                sensorData = LMSensors.read();
+//                System.out.println(sensorData);
+
                 //Get immediate statistics
-                double cpuLoad = stats.getImmediateCPULoad();
-                double cpuTemp = stats.getCPUTempCelsius();
+                double cpuLoad = platform.getImmediateCPULoad();
+                SensorProperty cpuTempProp = LMSensors.getSensorProperty(sensorData,
+                        Main.settings.LINUX_CPU_TEMP_SENSOR_NAME, Main.settings.LINUX_CPU_TEMP_KEY);
+
+                double cpuTemp = -1;
+                if (cpuTempProp != null) cpuTemp = StringUtils.extractDouble(cpuTempProp.value);
+
                 webApp.addDataPoint(cpuTemp, cpuLoad);
 //                System.out.println("Temp: "+cpuTemp+"; Load: "+cpuLoad);
 
@@ -88,13 +102,12 @@ public class CPUTempMonitor {
                 if (Main.settings.PROTECTION_SHUTDOWN_ON_TEMP_ERROR) {
                     Platform.SINGLETON.shutdown("Error with CPU temp monitor: " + e.getMessage());
                 } else {
-                    Main.LOGGER.error("Error with CPU temp monitor",e);
+                    Main.LOGGER.error("Error with CPU temp monitor", e);
                     TempratureProtectionApplet.downclock();
                 }
             }
         }, 0, Main.settings.SENSORS_UPDATE_MS, TimeUnit.MILLISECONDS);
     }
-
 
 
     public void shutdown() {

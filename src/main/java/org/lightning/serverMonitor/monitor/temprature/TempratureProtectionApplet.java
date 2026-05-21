@@ -1,4 +1,4 @@
-package org.lightning.serverMonitor.applets.temprature;
+package org.lightning.serverMonitor.monitor.temprature;
 
 import org.lightning.serverMonitor.Main;
 import org.lightning.serverMonitor.platform.FrequencyPolicy;
@@ -9,12 +9,12 @@ public class TempratureProtectionApplet {
 
     public static void checkTemp(double cpuTemp) {
         if (cpuTemp >= Main.settings.PROTECTION_SHUTDOWN_TEMP && Main.settings.PROTECTION_SHUTDOWN_TEMP > 0) {
-            Platform.SINGLETON.shutdown("Temperature too high: " + cpuTemp + "C");
+            Platform.SINGLETON.shutdown("Temperature too high: " + cpuTemp + "C; Shutting down!");
         } else if (cpuTemp >= Main.settings.PROTECTION_ALERT_TEMP && Main.settings.PROTECTION_ALERT_TEMP > 0) {
-            if (Main.settings.PROTECTION_TEMP_ALERT_DISCORD_NOTIFICATION_INTERVAL > 0 &&
-                    System.currentTimeMillis() - lastDiscordNotification > Main.settings.PROTECTION_TEMP_ALERT_DISCORD_NOTIFICATION_INTERVAL) {
+            if (Main.settings.PROTECTION_ALERT_NOTIFICATION_INTERVAL > 0 &&
+                    System.currentTimeMillis() - lastDiscordNotification > Main.settings.PROTECTION_ALERT_NOTIFICATION_INTERVAL) {
                 lastDiscordNotification = System.currentTimeMillis();
-                Main.LOGGER.info("Temperature alert: " + cpuTemp + "C");
+                Main.LOGGER.warn("Temperature alert: " + cpuTemp + "C; Downclocking! ");
                 downclock();
             }
         }

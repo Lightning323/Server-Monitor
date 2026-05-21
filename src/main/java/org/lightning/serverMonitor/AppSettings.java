@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 
 public class AppSettings {
 
+
     public String SERVER_NAME = "Server";
 
     //Webapp
@@ -20,8 +21,12 @@ public class AppSettings {
     public int SENSORS_UPDATE_MS = 5000;
     public int STARTUP_FREQUENCY_MHZ = 3000;
 
+    //Linux LM-sensors
+    public String LINUX_CPU_TEMP_SENSOR_NAME = "k10temp-pci-00c3";
+    public String LINUX_CPU_TEMP_KEY = "Tctl";
+
     //Temprature alert / protection
-    public long PROTECTION_TEMP_ALERT_DISCORD_NOTIFICATION_INTERVAL = 1000 * 60 * 5;
+    public long PROTECTION_ALERT_NOTIFICATION_INTERVAL = 1000 * 60 * 5;
     public boolean PROTECTION_SHUTDOWN_ON_TEMP_ERROR = false;
     public int PROTECTION_SHUTDOWN_TEMP = 90;
     public int PROTECTION_ALERT_TEMP = 70;
