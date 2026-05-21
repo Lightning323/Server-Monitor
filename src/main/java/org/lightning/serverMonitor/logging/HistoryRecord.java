@@ -1,4 +1,4 @@
-package org.lightning.serverMonitor.javalinWebapp;
+package org.lightning.serverMonitor.logging;
 
 public class HistoryRecord {
     public static final String RECORD_HEADER = "time,cpu-load,cpu-temp\n";

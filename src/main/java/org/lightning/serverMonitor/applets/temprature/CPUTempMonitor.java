@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CPUTempMonitor {
 
-    private static long msOver60C, msOver65C, msOver70C, msOver75C, msOver80C, msOver85C, msOver90C;
+    private static long msOver45C, msOver50C, msOver55C, msOver60C, msOver65C, msOver70C, msOver75C, msOver80C, msOver85C, msOver90C;
 
     ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     Platform stats;
@@ -25,6 +25,9 @@ public class CPUTempMonitor {
 
     public String getTimeOverTemp() {
         return new StringBuilder()
+                .append("> 45C: ").append(MiscUtils.convertMsToHMS(msOver45C)).append("\n")
+                .append("> 50C: ").append(MiscUtils.convertMsToHMS(msOver50C)).append("\n")
+                .append("> 55C: ").append(MiscUtils.convertMsToHMS(msOver55C)).append("\n")
                 .append("> 60C: ").append(MiscUtils.convertMsToHMS(msOver60C)).append("\n")
                 .append("> 65C: ").append(MiscUtils.convertMsToHMS(msOver65C)).append("\n")
                 .append("> 70C: ").append(MiscUtils.convertMsToHMS(msOver70C)).append("\n")
@@ -45,6 +48,16 @@ public class CPUTempMonitor {
                 webApp.addDataPoint(cpuTemp, cpuLoad);
 //                System.out.println("Temp: "+cpuTemp+"; Load: "+cpuLoad);
 
+
+                if (cpuTemp > 45) {
+                    msOver45C += Main.settings.SENSORS_UPDATE_MS;
+                }
+                if (cpuTemp > 50) {
+                    msOver50C += Main.settings.SENSORS_UPDATE_MS;
+                }
+                if (cpuTemp > 55) {
+                    msOver55C += Main.settings.SENSORS_UPDATE_MS;
+                }
                 if (cpuTemp > 60) {
                     msOver60C += Main.settings.SENSORS_UPDATE_MS;
                 }

@@ -3,13 +3,13 @@ package org.lightning.serverMonitor.javalinWebapp;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
+import org.lightning.serverMonitor.CustomCommand;
 import org.lightning.serverMonitor.Main;
-import org.lightning.serverMonitor.javalinWebapp.onMessageHandlers.CustomCommandHandler;
 import org.lightning.serverMonitor.javalinWebapp.onMessageHandlers.LoadHistoryHandler;
 import org.lightning.serverMonitor.javalinWebapp.onMessageHandlers.SetMaxFrequencyHandler;
 import org.lightning.serverMonitor.javalinWebapp.onMessageHandlers.ShutdownHandler;
+import org.lightning.serverMonitor.logging.HistoryRecord;
 import org.lightning.serverMonitor.platform.FrequencyPolicy;
-import org.lightning.serverMonitor.CustomCommand;
 import org.lightning.serverMonitor.platform.Platform;
 
 import java.io.File;
@@ -36,7 +36,6 @@ public class JavalinWebApp {
         onMessageHandlers.add(new LoadHistoryHandler(this));
         onMessageHandlers.add(new SetMaxFrequencyHandler(this));
         onMessageHandlers.add(new ShutdownHandler(this));
-        onMessageHandlers.add(new CustomCommandHandler(this));
     }
 
     public void addDataPoint(double cpuTemp, double cpuLoad) {
@@ -70,6 +69,7 @@ public class JavalinWebApp {
                     ws.onConnect(ctx -> {
                         System.out.println("Connected to client: " + ctx.toString());
                         ctx.send("app-version" + DELIMITER + Main.APP_VERSION);
+                        ctx.send("server-name" + DELIMITER + Main.settings.SERVER_NAME);
                         clients.add(ctx);
                         ctx.send("is-admin" + DELIMITER + Platform.IS_ADMIN);
 
@@ -81,11 +81,6 @@ public class JavalinWebApp {
                         ctx.send("app-interval" + DELIMITER + Main.settings.SENSORS_UPDATE_MS);
                         sendFrequencyPolicy(ctx, Platform.SINGLETON.getFrequencyPolicy());
                         ctx.send("history-records" + DELIMITER + getSortedHistoryRecords());
-
-                        //Send custom commands
-                        for (CustomCommand command : Main.settings.CUSTOM_COMMANDS) {
-                            ctx.send("custom-command" + DELIMITER + command.identifier);
-                        }
 
                         ctx.send("clear-charts" + DELIMITER);
                         int l = Math.min(LIVE_DATA_POINTS, history.size());
@@ -135,7 +130,7 @@ public class JavalinWebApp {
     }
 
     private String getSortedHistoryRecords() {
-        File[] historyRecords = new File(WebappHistory.directory).listFiles();
+        File[] historyRecords = new File(WebappHistory.TEMP_HISTORY_DIR).listFiles();
         StringBuilder historyStr = new StringBuilder();
 
         if (historyRecords != null && historyRecords.length > 0) {

@@ -11,7 +11,9 @@ import java.nio.file.Paths;
 
 public class AppSettings {
 
-//Webapp
+    public String SERVER_NAME = "Server";
+
+    //Webapp
     public int WEBAPP_LOCALHOST_PORT = 8080;
 
     //Sensors
@@ -23,14 +25,6 @@ public class AppSettings {
     public boolean PROTECTION_SHUTDOWN_ON_TEMP_ERROR = false;
     public int PROTECTION_SHUTDOWN_TEMP = 90;
     public int PROTECTION_ALERT_TEMP = 70;
-
-
-    //Discord bot (Leave out discord bot token if you don't want to use it)
-    public String DISCORD_BOT_TOKEN = null;
-    public String DISCORD_BOT_WHITELIST_USER_ID = "";
-    public String DISCORD_BOT_SERVER_ID = "";
-    public String DISCORD_BOT_CHANNEL_ID = "";
-    public CustomCommand[] CUSTOM_COMMANDS = new CustomCommand[]{};
 
 
     //========================================================================================================================

@@ -29,7 +29,7 @@ public class MiscUtils {
         long seconds = duration.getSeconds();
         long absSeconds = Math.abs(seconds);
         String positive = String.format(
-                "%d:%02d:%02d",
+                "%dh:%02dm:%02ds",
                 absSeconds / 3600,
                 (absSeconds % 3600) / 60,
                 absSeconds % 60);

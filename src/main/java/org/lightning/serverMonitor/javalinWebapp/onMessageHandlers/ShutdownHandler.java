@@ -12,10 +12,10 @@ public class ShutdownHandler extends OnMessageHandlers {
     }
 
     public void onMessage(WsMessageContext ctx, String message) {
-        if (message.isBlank() || message.equals("shutdown")) {
-            Platform.SINGLETON.shutdown("webapp");
-        } else {
-            Platform.SINGLETON.suspend("webapp");
-        }
+//        if (message.isBlank() || message.equals("shutdown")) {
+//            Platform.SINGLETON.shutdown("webapp");
+//        } else {
+//            Platform.SINGLETON.suspend("webapp");
+//        }
     }
 }
