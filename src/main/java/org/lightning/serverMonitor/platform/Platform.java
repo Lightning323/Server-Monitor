@@ -38,7 +38,9 @@ public abstract class Platform {
     }
 
 
-    public abstract String getCPULoadStr();
+    public double getCPULoad(){
+        return 0;
+    }
 
     public double getImmediateCPULoad() {
         return 0;

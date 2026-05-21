@@ -51,8 +51,8 @@ public class SystemMonitorService {
                 sensorData = LMSensors.read();
 //                System.out.println(sensorData);
 
-                //Get immediate statistics
-                double cpuLoad = platform.getImmediateCPULoad();
+//                double cpuLoad = platform.getImmediateCPULoad();
+                double cpuLoad = platform.getCPULoad();
                 SensorProperty cpuTempProp = LMSensors.getSensorProperty(sensorData,
                         Main.settings.LINUX_CPU_TEMP_SENSOR_NAME, Main.settings.LINUX_CPU_TEMP_KEY);
 

@@ -10,6 +10,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -57,50 +59,60 @@ class Platform_Ubuntu extends Platform {
         return "Unknown" + processLoad;
     }
 
+
+    private long[] lastStats = null;
+    private long lastTimestamp = 0;
+
     /**
-     * High Latency:
-     * top -bn1 takes ~100ms to run. That’s ~100× slower than /proc/stat.
-     * <p>
-     * Low Precision:
-     * top only reports rounded CPU usage (2 decimal digits max) and averages over 100ms.
-     * <p>
-     * Expensive Fork:
-     * Every call to top spawns a full shell + terminal environment.
-     *
-     * @return
+     * Returns the CPU load based on the time elapsed since the last call.
+     * Returns 0.0 on the first call to initialize the baseline.
      */
-    public double getTopCPULoad() {
-        double cpuLoad = -1.0;
+    public double getCPULoad() {
         try {
-            Process process = new ProcessBuilder("top", "-bn1").start();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
-                    if (line.contains("%Cpu(s):")) {
-                        String[] parts = line.substring("%Cpu(s):".length()).split("\\s+");
-                        for (int i = 1; i < parts.length; i++) {
-                            if (parts[i].endsWith("us,")) {//Usage
-                                String usage = parts[i - 1];
-//                                System.out.println(usage);
-                                try {
-                                    return Double.parseDouble(usage);
-                                } catch (NumberFormatException e) {
-                                    // Handle parsing error if needed
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                        break; // Found the CPU line, no need to read further
-                    }
-                }
+            long[] currentStats = readCpuStats();
+            long currentTimestamp = System.currentTimeMillis();
+
+            if (lastStats == null) {
+                lastStats = currentStats;
+                lastTimestamp = currentTimestamp;
+                return 0.0; // First call, no history to compare against
             }
-            process.waitFor();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+
+            double idleDiff = currentStats[0] - lastStats[0];
+            double totalDiff = currentStats[1] - lastStats[1];
+
+            // Update state for next call
+            lastStats = currentStats;
+            lastTimestamp = currentTimestamp;
+
+            // Prevent division by zero
+            if (totalDiff <= 0) return 0.0;
+
+            return 100.0 * (1.0 - (idleDiff / totalDiff));
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading CPU stats", e);
         }
-        return cpuLoad;
     }
+
+    private long[] readCpuStats() throws IOException {
+        // Same implementation as provided previously
+        String line = java.nio.file.Files.readAllLines(java.nio.file.Paths.get("/proc/stat")).get(0);
+        String[] parts = line.split("\\s+");
+
+        long idleTime = Long.parseLong(parts[4]) + Long.parseLong(parts[5]);
+        long totalTime = 0;
+        for (int i = 1; i < parts.length; i++) {
+            totalTime += Long.parseLong(parts[i]);
+        }
+        return new long[]{idleTime, totalTime};
+    }
+
+    public double getImmediateCPULoad() {
+        OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        double load = osBean.getCpuLoad(); // Returns % as 0.0 to 1.0
+        return (load < 0) ? -1 : load * 100; // Returns -1 if not available
+    }
+
 
     public boolean isRunningAsAdmin() {
         try {
