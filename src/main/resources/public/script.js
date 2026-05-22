@@ -149,7 +149,10 @@ function onMessageData(event) {
                     loadHistory(this.dataset.filename);
                 });
 
-                a.textContent = filename.trim();
+                a.textContent = filename.trim()
+                    .replace(".csv", "");
+                if (index == 0) a.textContent += " (current)";
+
                 a.dataset.filename = filename.trim(); // Optionally store raw filename
                 li.appendChild(a);
                 dropdownMenu.appendChild(li);
