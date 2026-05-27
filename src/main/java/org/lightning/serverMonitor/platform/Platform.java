@@ -13,6 +13,12 @@ public abstract class Platform {
     public final static String OS = System.getProperty("os.name").toLowerCase();
     public static boolean IS_ADMIN = false;
 
+    public final static String CPU_VENDOR_INTEL = "Intel";
+    public final static String CPU_VENDOR_AMD = "AMD";
+    public final static String CPU_VENDOR_UNKNOWN = "Unknown";
+
+    public final static String CPU_VENDOR;
+
     static {
         if (OS.toLowerCase().contains("linux")) {
             Platform.SINGLETON = new Platform_Ubuntu();
@@ -23,6 +29,8 @@ public abstract class Platform {
         }
         System.out.println("Is admin: " + IS_ADMIN);
         System.out.println("OS: " + OS);
+
+        CPU_VENDOR = Platform.SINGLETON.getCPUVendor();
     }
 
 
@@ -38,7 +46,7 @@ public abstract class Platform {
     }
 
 
-    public double getCPULoad(){
+    public double getCPULoad() {
         return 0;
     }
 
@@ -96,6 +104,14 @@ public abstract class Platform {
 
     protected long pollAwakeMillis() {
         return -1;
+    }
+
+    public String getCPUInfo() {
+        return null;
+    }
+
+    protected String getCPUVendor() {
+        return "Unknown";
     }
 
     public abstract FrequencyPolicy setMaxFrequencyMHZ(double maxFrequencyMHZ);

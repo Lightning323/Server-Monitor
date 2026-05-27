@@ -166,14 +166,10 @@ function onMessageData(event) {
             document.getElementById('cpu-temp-history').innerText = data;
             break;
         /**
-         * Frequency Policy
+         * CPU Frequency
          */
-        case "frequency-policy":
-            document.getElementById('frequency-policy').innerText = data;
-            break;
-        case "max-software-frequency":
-            console.log("max-software-frequency: " + data);
-            $('.max-software-frequency').val(parseInt(data));
+        case "cpu-info":
+            document.getElementById('cpu-info').innerText = data;
             break;
         /**
          * System

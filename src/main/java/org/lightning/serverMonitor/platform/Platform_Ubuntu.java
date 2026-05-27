@@ -286,6 +286,48 @@ class Platform_Ubuntu extends Platform {
         return new String[]{"bash", "-c", "sudo cpupower frequency-set -d " + minFrequencyMHZ + "MHz -u " + maxFrequencyMHZ + "MHz"};
     }
 
+    public String getCPUInfo() {
+        String out = "";
+        out += "CPU Vendor: " + CPU_VENDOR + "\n";
+        if (CPU_VENDOR.equals(CPU_VENDOR_INTEL)) {
+            String governor = "Unknown";
+            String maxPower = "Unknown";
+
+            try {
+                // Read the contents of the files and trim any trailing newlines
+                governor = Files.readString(Paths.get("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")).trim();
+                maxPower = Files.readString(Paths.get("/sys/devices/system/cpu/intel_pstate/max_perf_pct")).trim();
+            } catch (IOException e) {
+                // Handle exception (e.g., file not found, permission denied)
+                System.err.println("Failed to read CPU stats: " + e.getMessage());
+            }
+            out += "Governor: " + governor + " | Max Power: " + maxPower + "%\n";
+        }
+        FrequencyPolicy policy = getFrequencyPolicy();
+        out += "Hardware Frequency: " + policy.minHardwareFrequencyMHZ + "MHz - " + policy.maxHardwareFrequencyMHZ + "MHz\n";
+        out += "Software Frequency: " + policy.minSoftwareFrequencyMHZ + "MHz - " + policy.maxSoftwareFrequencyMHZ + "MHz\n";
+        return out;
+    }
+
+    public String getCPUVendor() {
+        try {
+            // Read lines from /proc/cpuinfo
+            for (String line : Files.readAllLines(Paths.get("/proc/cpuinfo"))) {
+                if (line.startsWith("vendor_id")) {
+                    if (line.contains("GenuineIntel")) {
+                        return "Intel";
+                    } else if (line.contains("AuthenticAMD")) {
+                        return "AMD";
+                    }
+                    return line.split(":")[1].trim(); // Returns raw vendor string if something else
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Could not read /proc/cpuinfo: " + e.getMessage());
+        }
+        return "Unknown";
+    }
+
     public FrequencyPolicy setMaxFrequencyMHZ(double maxFrequencyMHZ) {
         //Clamp the frequency to hardware limits
         final int margin = 0;

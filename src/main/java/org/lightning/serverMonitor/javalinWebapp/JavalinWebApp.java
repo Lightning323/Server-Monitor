@@ -76,7 +76,7 @@ public class JavalinWebApp {
                         );
 
                         ctx.send("app-interval" + DELIMITER + Main.settings.SENSORS_UPDATE_MS);
-                        sendFrequencyPolicy(ctx, Platform.SINGLETON.getFrequencyPolicy());
+                        ctx.send("cpu-info" + DELIMITER + Platform.SINGLETON.getCPUInfo());
                         ctx.send("history-records" + DELIMITER + getSortedHistoryRecords());
 
                         ctx.send("clear-charts" + DELIMITER);
@@ -133,12 +133,5 @@ public class JavalinWebApp {
         return historyStr.toString();
     }
 
-    public void sendFrequencyPolicy(WsContext ctx, FrequencyPolicy policy) {
-        ctx.send("frequency-policy" + DELIMITER + policy.toString() + "\n\n\n" + policy.rawCommandOutput);
-        ctx.send("min-software-frequency" + DELIMITER + policy.minSoftwareFrequencyMHZ);
-        ctx.send("max-software-frequency" + DELIMITER + policy.maxSoftwareFrequencyMHZ);
-        ctx.send("min-hardware-frequency" + DELIMITER + policy.minHardwareFrequencyMHZ);
-        ctx.send("max-hardware-frequency" + DELIMITER + policy.maxHardwareFrequencyMHZ);
-    }
 
 }
