@@ -1,7 +1,7 @@
 package org.lightning.serverMonitor;
 
 import io.javalin.websocket.WsConnectContext;
-import org.lightning.serverMonitor.javalinWebapp.packets.ServerInfoPacket;
+import org.lightning.serverMonitor.javalinWebapp.packets.*;
 import org.lightning.serverMonitor.monitor.SensorMonitor;
 import org.lightning.serverMonitor.javalinWebapp.JavalinWebApp;
 import org.lightning.serverMonitor.platform.Platform;
@@ -35,19 +35,24 @@ public class Main {
         webApp = new JavalinWebApp() {
             public void onConnect(WsConnectContext ctx) {
                 super.onConnect(ctx);
-                System.out.println("Client connected: ");
                 sendPacket(ctx, new ServerInfoPacket(APP_VERSION, Main.settings.SERVER_NAME));
+                sendPacket(ctx, new CpuInfoPacket(Platform.SINGLETON.getCPUInfo()));
             }
         };
         webApp.registerPacket(ServerInfoPacket.class);
-
+        webApp.registerPacket(SensorDumpPacket.class);
+        webApp.registerPacket(CpuInfoPacket.class);
+        webApp.registerPacket(SensorHistoryPacket.class);
+        webApp.registerPacket(SensorHistoryRequestPacket.class);
         webApp.start(3000);
-        System.out.println("Webapp started on port 3000");
 
-//        //Start temp monitor
-//        tempMonitor.start();
-//
-//        //Start taskbar tray
-//        taskbarTray.start();
+        //Start temp monitor
+        tempMonitor.start();
+        tempMonitor.sensorCallback = (sensorData) -> {
+            webApp.broadcastPacket(new SensorDumpPacket(sensorData));
+        };
+
+        //Start taskbar tray
+        taskbarTray.start();
     }
 }

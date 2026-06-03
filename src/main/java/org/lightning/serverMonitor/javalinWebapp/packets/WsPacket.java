@@ -1,10 +1,9 @@
 package org.lightning.serverMonitor.javalinWebapp.packets;
 
-import com.google.gson.JsonObject;
-import io.javalin.websocket.WsContext;
-import org.lightning.serverMonitor.javalinWebapp.JavalinWebApp;
+import org.lightning.serverMonitor.javalinWebapp.PacketContext;
 
-public abstract interface WsPacket {
+public interface WsPacket {
 
-    public abstract void handle(WsContext ctx);
+    default public void handle(PacketContext ctx) {
+    }
 }

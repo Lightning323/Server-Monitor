@@ -176,7 +176,7 @@ class Platform_Ubuntu extends Platform {
             BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             String line = br.readLine().trim();
 
-            // Parse timestamp
+            // Parse t
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime bootOrResume = LocalDateTime.parse(line, fmt);
 

@@ -36,7 +36,7 @@ public class SensorDump {
                     else if (line.startsWith("Adapter:")) {
                         if (currentDevice != null) currentDevice.adapter = line.substring(8).trim();
                     }
-                    // Identify properties (key: value)
+                    // Identify properties (key: v)
                     else if (currentDevice != null) {
                         String[] parts = line.split(":", 2);
                         String key = parts[0].trim();
@@ -62,7 +62,7 @@ public class SensorDump {
         for (SensorDevice device : devices) {
             if (device.deviceName.equals(sensorName)) {
                 for (SensorProperty prop : device.properties) {
-//                    System.out.println(prop.key + ": " + prop.value);
+//                    System.out.println(prop.key + ": " + prop.v);
                     if (prop.key.equals(targetKey)) {
                         return prop;
                     }
@@ -76,7 +76,7 @@ public class SensorDump {
     public String toString() {
         return "SensorData{" +
                 "devices=" + devices +
-                ", timestamp=" + timestamp +
+                ", t=" + timestamp +
                 '}';
     }
 }

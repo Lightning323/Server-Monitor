@@ -1,4 +1,4 @@
-package org.lightning.serverMonitor.utils;
+package org.lightning.serverMonitor.monitor;
 
 import org.lightning.serverMonitor.sensorMonitoring.SensorDump;
 import org.lightning.serverMonitor.sensorMonitoring.SensorDevice;
@@ -30,7 +30,7 @@ public class SensorDatabaseWriter {
         // 2. Ensure table has columns for all discovered keys
         ensureColumnsExist(discoveredKeys);
 
-        // 3. Insert the data (Flattening into one row per timestamp)
+        // 3. Insert the data (Flattening into one row per t)
         String sql = buildInsertSql(discoveredKeys);
         try (Connection conn = DriverManager.getConnection(URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -104,20 +104,23 @@ public class SensorDatabaseWriter {
         return sb.toString();
     }
 
+    public record HistoryEntry(long t, String v) {
+    }
+
     /**
      * Retrieves sensor values for a specific column between two timestamps.
-     * @param column The name of the sensor column (e.g., "amdgpu_pci_0400_edge")
-     * @param startTs Starting timestamp
-     * @param endTs Ending timestamp
+     *
+     * @param column  The name of the sensor column (e.g., "amdgpu_pci_0400_edge")
+     * @param startTs Starting t
+     * @param endTs   Ending t
      * @return Array of strings containing the sensor values
      */
-    public static String[] getSensorDataRange(String column, long startTs, long endTs) {
-        // We use a safe query. Note: column names cannot be passed as ? parameters
-        // So we ensure the column name is safe to prevent SQL injection
+    public static HistoryEntry[] getSensorDataRange(String column, long startTs, long endTs) {
         String safeColumn = column.replaceAll("[^a-zA-Z0-9_]", "");
-        String sql = "SELECT " + safeColumn + " FROM sensor_logs WHERE timestamp >= ? AND timestamp <= ? ORDER BY timestamp ASC";
+        // Select both t and the desired column
+        String sql = "SELECT timestamp, " + safeColumn + " FROM sensor_logs WHERE timestamp >= ? AND timestamp <= ? ORDER BY timestamp ASC";
 
-        List<String> results = new ArrayList<>();
+        List<HistoryEntry> results = new ArrayList<>();
 
         try (Connection conn = DriverManager.getConnection(URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -127,14 +130,17 @@ public class SensorDatabaseWriter {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    results.add(rs.getString(1));
+                    long ts = rs.getLong("timestamp");
+                    String value = rs.getString(safeColumn);
+
+                    // Combine them into a single string for your frontend
+                    results.add(new HistoryEntry(ts, value));
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        return results.toArray(new String[0]);
+        return results.toArray(new HistoryEntry[0]);
     }
 
     public static String getSensorColumn(SensorDevice device, SensorProperty prop) {

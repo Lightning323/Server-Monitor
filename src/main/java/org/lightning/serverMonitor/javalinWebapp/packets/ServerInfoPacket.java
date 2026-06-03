@@ -1,10 +1,10 @@
 package org.lightning.serverMonitor.javalinWebapp.packets;
 
-import io.javalin.websocket.WsContext;
+import org.lightning.serverMonitor.javalinWebapp.PacketContext;
 
 public record ServerInfoPacket(
         String appVersion, String serverName) implements WsPacket{
     @Override
-    public void handle(WsContext ctx) {
+    public void handle(PacketContext ctx) {
     }
 }

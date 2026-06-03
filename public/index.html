@@ -12,20 +12,31 @@
     <link rel="apple-touch-icon" href="res/icon-192.png">
 
     <link rel="stylesheet" href="res/bootstrap/css/bootstrap.css">
-    <script src="res/bootstrap/js/bootstrap.js"></script>
+
     <link rel="stylesheet" href="res/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 </head>
 <body>
 
 <div id="title">
-    <h1 style="font-size: 1.5em;"><span id="server-name"></span>Monitor <span class="app-version">N/A</span> test</h1>
+    <h1 style="font-size: 1.5em;"><span id="server-name"></span> Monitor <span id="app-version">N/A</span></h1>
 </div>
 
 
-
 <div class="container">
+    <div class="row">
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                Select a Sensor
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="sensor-dynamic-dropdown">
+            </ul>
+        </div>
+    </div>
     <div class="row">
         <!-- Nav tabs -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -44,34 +55,23 @@
 
         <!-- Tab panes -->
         <div class="tab-content border border-top-0 p-3">
+            <!-- Live Data Tab -->
             <div class="tab-pane fade show active" id="tab1" role="tabpanel">
-                <canvas
-                        id="tempChart"
-                        data-n="20"
-                        data-color="blue"
-                        data-label="Engine Temperature (°C)"
-                        data-y-min="0"
-                        data-y-max="100"
-                        style="width: 800px; height: 400px"
-                ></canvas>
-
+                <span style="display: inline-block; font-size: 2em;" id="status-temp">
+                </span>
+                <canvas id="tempChart"></canvas>
             </div>
+            <!-- History Tab -->
             <div class="tab-pane fade" id="tab2" role="tabpanel">
-
-                <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                        Select saved history file
-                    </button>
-                    <ul class="dropdown-menu" id="dropdown-menu" style="max-height: 300px; overflow-y: scroll;">
-                    </ul>
+                <label for="dateInput" class="form-label">Select Date</label>
+                <input type="date" class="form-control" id="dateInput">
+                <div id="historyProgress" style="display: none; align-items: center;">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div class="ms-2">Loading sensor data...</div>
                 </div>
-
-                <br>
-
-
-                <div id="tempChart_history" class="col-12 col-md-6 monitor-chart"></div>
-                <div id="loadChart_history" class="col-12 col-md-6 monitor-chart"></div>
+                <canvas id="historyChart"></canvas>
             </div>
         </div>
 
@@ -79,16 +79,12 @@
 
     <div class="row">
         <div class="col-12 col-md-6">
-            <h2>CPU Info</h2>>
-            <div style="position: relative; background-color: #eee; padding: 10px; margin: 10px 0 10px 0;">
-                <button onclick="setMaxFrequency(-1)"
-                        class="btn btn-sm btn-light cornerButton"
-                        title="Refresh Frequency Policy">
-                    <i class="bi bi-arrow-clockwise"></i>
-                </button>
-                <div>
-                    <p id="cpu-info" style="margin: 0;"></p>
-                </div>
+            <h2>CPU Info</h2>
+            <div id="cpu-info"
+                 style="
+                 background-color: #eee;
+                 padding: 10px;
+                 margin: 10px 0 10px 0;">
             </div>
         </div>
 
@@ -119,14 +115,6 @@
                         <td><i class="bi bi-memory icon"></i> RAM Usage</td>
                         <td id="status-ram">N/A</td>
                     </tr>
-                    <tr>
-                        <td><i class="bi bi-info-circle icon"></i> Update interval</td>
-                        <td><span id="app-interval">N/A</span></td>
-                    </tr>
-                    <tr>
-                        <td><i class="bi bi-info-circle icon"></i> Connection</td>
-                        <td><span id="conn-status"></span></td>
-                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -145,5 +133,6 @@
     console.log("IS STANDALONE: " + isStandalone);
 </script>
 <script type="module" src="/res/js/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

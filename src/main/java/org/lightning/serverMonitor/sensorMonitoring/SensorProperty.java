@@ -13,7 +13,7 @@ public class SensorProperty {
     public String toString() {
         return "SensorProperty{" +
                 "key='" + key + '\'' +
-                ", value='" + value + '\'' +
+                ", v='" + value + '\'' +
                 '}';
     }
 }

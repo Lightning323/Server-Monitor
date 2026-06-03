@@ -3,10 +3,6 @@ package org.lightning.serverMonitor.monitor;
 import org.lightning.serverMonitor.Main;
 import org.lightning.serverMonitor.platform.Platform;
 import org.lightning.serverMonitor.sensorMonitoring.SensorDump;
-import org.lightning.serverMonitor.sensorMonitoring.SensorProperty;
-import org.lightning.serverMonitor.sensorMonitoring.TimeOverTemp;
-import org.lightning.serverMonitor.utils.SensorDatabaseWriter;
-import org.lightning.serverMonitor.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +17,13 @@ public class SensorMonitor {
     Platform platform;
     final List<SensorDump> history;
     private static final int DATABASE_RECORD_WRITE_INTERVAL = 1;
-    public final TimeOverTemp cpuTimeOverTemp;
-    public Consumer<Double> cpuTempCallback;
+//    public final TimeOverTemp cpuTimeOverTemp;
+    public Consumer<SensorDump> sensorCallback;
 
     public SensorMonitor(Platform platform) {
         this.platform = platform;
         history = new ArrayList<>();
-        cpuTimeOverTemp = new TimeOverTemp(new ArrayList<>(List.of(45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100)));
+//        cpuTimeOverTemp = new TimeOverTemp(new ArrayList<>(List.of(45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100)));
     }
 
     public void start() {
@@ -44,11 +40,11 @@ public class SensorMonitor {
                 }
 
                 //Process CPU temp
-                SensorProperty cpuTempProp = sensorData.getSensor(Main.settings.LINUX_CPU_TEMP_SENSOR_NAME, Main.settings.LINUX_CPU_TEMP_KEY);
-                double cpuTemp = -1;
-                if (cpuTempProp != null) cpuTemp = StringUtils.extractDouble(cpuTempProp.value);
-                if (cpuTempCallback != null) cpuTempCallback.accept(cpuTemp);
-                cpuTimeOverTemp.accumulate(cpuTemp, Main.settings.SENSORS_UPDATE_MS);
+//                SensorProperty cpuTempProp = sensorData.getSensor(Main.settings.LINUX_CPU_TEMP_SENSOR_NAME, Main.settings.LINUX_CPU_TEMP_KEY);
+//                double cpuTemp = -1;
+//                if (cpuTempProp != null) cpuTemp = StringUtils.extractDouble(cpuTempProp.v);
+                if (sensorCallback != null) sensorCallback.accept(sensorData);
+//                cpuTimeOverTemp.accumulate(cpuTemp, Main.settings.SENSORS_UPDATE_MS);
             } catch (Throwable e) {
                 Main.LOGGER.error("Error with CPU temp monitor", e);
             }

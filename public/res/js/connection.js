@@ -13,6 +13,11 @@ const PacketRegistry = {
             return;
         }
 
+        if (!packet || !packet.type) {
+            console.error("Invalid packet format received (missing type):", packet);
+            return;
+        }
+
         try {
             const handler = this.handlers[packet.type.toLowerCase().trim()];
             if (handler) handler(packet.payload);
