@@ -1,14 +1,57 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>Configurable Live Plot</title>
-   
-  </head>
-  <body>
- 
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uplot@1.6.24/dist/uPlot.min.css">
+  <style>
+    /* This container MUST be relative so the button stays inside it */
+    #chart-wrapper { position: relative; display: inline-block; }
+  </style>
+</head>
+<body>
 
-    <script>
-     
-    </script>
-  </body>
+<div id="chart-wrapper">
+  <button onclick="resetZoom()" style="position: absolute; top: 10px; right: 10px; z-index: 100;">
+    Reset Zoom
+  </button>
+  <div id="chart-target"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/uplot@1.6.24/dist/uPlot.iife.min.js"></script>
+<script>
+  const data = [
+    [1717420000, 1717420060, 1717420120],
+    [25.4, 26.1, 25.8]
+  ];
+
+  const opts = {
+    width: 800,
+    height: 400,
+    title: "High-Performance Sensor Monitor",
+    series: [
+      {},
+      { stroke: "red", width: 2, label: "Temp" }
+    ],
+    cursor: {
+      drag: { setScale: true }
+    }
+  };
+
+  // Target the specific inner div, not the container with the button
+  let u = new uPlot(opts, data, document.getElementById("chart-target"));
+  function resetZoom() {
+    // 1. Get the original data bounds directly from the array
+    const xData = data[0]; // Your timestamp array
+    const minX = xData[0];
+    const maxX = xData[xData.length - 1];
+
+    // 2. Explicitly tell uPlot to go to these bounds
+    u.setScale('x', { min: minX, max: maxX });
+
+    // 3. Reset Y-axis to auto
+    u.setScale('y', { min: null, max: null });
+
+    console.log("Forced manual reset to:", minX, maxX);
+  }
+</script>
+</body>
 </html>

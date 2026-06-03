@@ -1,5 +1,5 @@
 import {connect, PacketRegistry} from './connection.js';
-import {setupChart, updateData, updateDataBatch, clearData} from './chart.js';
+import {setupChart, updateData, updateDataBatch, clearData,updateChartLabel} from './chart.js';
 
 console.log("SCRIPT LOADED");
 
@@ -21,9 +21,20 @@ PacketRegistry.register("CpuInfoPacket", (payload) => {
     document.getElementById('cpu-info').innerText = payload.cpuInfo;
 });
 
-const canvas = document.getElementById("tempChart");
+
+
+let chart = setupChart(document.getElementById("tempChart"),
+    {
+        color: "blue",
+        maxPoints: 200
+    });
+let historyChart = setupChart(document.getElementById("historyChart"),
+    {
+        color: "blue",
+        label: "History"
+    });
+
 const statusTemp = document.getElementById("status-temp");
-let chart;
 let sensorKeys;
 let selectedSensor;
 
@@ -46,29 +57,20 @@ function updateDropdown(items) {
             selectedSensor = event.target.innerText;
             label.innerText = selectedSensor;
             console.log("User selected:", selectedSensor);
-            if (!chart) {
-                chart = setupChart(canvas,
-                    {
-                        color: "blue",
-                        label: selectedSensor
-                    });
-            } else {
-                chart.config.data.datasets[0].label = selectedSensor;
-                clearData(chart);
-                chart.update();
-            }
+            // chart.config.data.datasets[0].label = selectedSensor;
+            updateChartLabel(chart, 1, selectedSensor);
+            clearData(chart);
         });
     });
 }
 
-const historyCanvas = document.getElementById("historyChart");
-const historyChart = setupChart(historyCanvas,
-    {
-        color: "blue",
-        label: "History"
-    });
+
 const dateSelector = document.getElementById("dateInput");
+
+//History properties
+let loadIndex = 0;
 const historyProgress = document.getElementById("historyProgress");
+const historyProgressText = document.getElementById("historyProgressText");
 
 dateSelector.addEventListener('change', () => {
     if (selectedSensor) {
@@ -80,6 +82,7 @@ dateSelector.addEventListener('change', () => {
             rawDate.getUTCDate(),
             0, 0, 0, 0
         ));
+        loadIndex = 0;
 
         const endDate = new Date(startDate);
         endDate.setUTCHours(23, 59, 59, 999);
@@ -87,7 +90,8 @@ dateSelector.addEventListener('change', () => {
         console.log("Start (UTC):", startDate); // 2026-06-03T00:00:00.000Z
         console.log("End (UTC):", endDate);     // 2026-06-03T23:59:59.999Z
 
-        historyChart.config.data.datasets[0].label = selectedSensor;
+        // historyChart.config.data.datasets[0].label = selectedSensor;
+        updateChartLabel(historyChart, 1, selectedSensor);
 
         PacketRegistry.send("SensorHistoryRequestPacket", {
             sensor: selectedSensor,
@@ -116,21 +120,33 @@ PacketRegistry.register("SensorDumpPacket", (payload) => {
 
     if (selectedSensor && chart) {
         statusTemp.innerText = sensors[selectedSensor];
-        updateData(chart, timestamp, toNumber(sensors[selectedSensor]));
-        historyProgress.style.display = "none";
+        var value = toNumber(sensors[selectedSensor]);
+        updateData(chart, timestamp, value);
+        // updateData(historyChart, timestamp, value);
     }
 });
 
+//We recieve history here
 PacketRegistry.register("SensorHistoryPacket", (payload) => {
-    console.log("Sensor history",payload);
-    clearData(historyChart);
+    historyProgressText.innerText = "Loading history " + loadIndex;
+    console.log(payload);
+    if (payload.clear == true) {
+        console.log("Clearing history");
+        clearData(historyChart);
+        loadIndex = 0;
+    }
+    console.log("Loading history " + loadIndex);
     let timestamps = []
     let values = []
+    loadIndex += 1;
     payload.history.forEach(entry => {
         timestamps.push(new Date(entry.t));
         values.push(toNumber(entry.v));
     });
     updateDataBatch(historyChart, timestamps, values);
+    if (payload.finalPacket) {
+        historyProgress.style.display = "none";
+    }
 });
 
 

@@ -113,34 +113,42 @@ public class SensorDatabaseWriter {
      * @param column  The name of the sensor column (e.g., "amdgpu_pci_0400_edge")
      * @param startTs Starting t
      * @param endTs   Ending t
+     * @param intervalMillis Interval between samples in milliseconds
      * @return Array of strings containing the sensor values
      */
-    public static HistoryEntry[] getSensorDataRange(String column, long startTs, long endTs) {
+    public static List<HistoryEntry> getSensorDataRange(String column, long startTs, long endTs, long intervalMillis) {
         String safeColumn = column.replaceAll("[^a-zA-Z0-9_]", "");
-        // Select both t and the desired column
-        String sql = "SELECT timestamp, " + safeColumn + " FROM sensor_logs WHERE timestamp >= ? AND timestamp <= ? ORDER BY timestamp ASC";
+
+        // We group by the calculated bucket to get exactly one sample per interval
+        String sql = """
+        SELECT (timestamp / ?) * ? AS bucket_ts, %s 
+        FROM sensor_logs 
+        WHERE timestamp >= ? AND timestamp <= ? 
+        GROUP BY bucket_ts 
+        ORDER BY bucket_ts ASC
+        """.formatted(safeColumn);
 
         List<HistoryEntry> results = new ArrayList<>();
 
         try (Connection conn = DriverManager.getConnection(URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setLong(1, startTs);
-            pstmt.setLong(2, endTs);
+            pstmt.setLong(1, intervalMillis);
+            pstmt.setLong(2, intervalMillis);
+            pstmt.setLong(3, startTs);
+            pstmt.setLong(4, endTs);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    long ts = rs.getLong("timestamp");
+                    long ts = rs.getLong("bucket_ts");
                     String value = rs.getString(safeColumn);
-
-                    // Combine them into a single string for your frontend
                     results.add(new HistoryEntry(ts, value));
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return results.toArray(new HistoryEntry[0]);
+        return results;
     }
 
     public static String getSensorColumn(SensorDevice device, SensorProperty prop) {
