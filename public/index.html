@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monitor</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Webapp">
+    <link rel="apple-touch-icon" href="res/icon-192.png">
+
+    <link rel="stylesheet" href="res/bootstrap/css/bootstrap.css">
+    <script src="res/bootstrap/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="res/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+</head>
+<body>
+
+<div id="title">
+    <h1 style="font-size: 1.5em;"><span id="server-name"></span>Monitor <span class="app-version">N/A</span> test</h1>
+</div>
+
+
+
+<div class="container">
+    <div class="row">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button"
+                        role="tab">Live Data
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button"
+                        role="tab"
+                        onclick="loadHistory('')">History
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content border border-top-0 p-3">
+            <div class="tab-pane fade show active" id="tab1" role="tabpanel">
+                <canvas
+                        id="tempChart"
+                        data-n="20"
+                        data-color="blue"
+                        data-label="Engine Temperature (°C)"
+                        data-y-min="0"
+                        data-y-max="100"
+                        style="width: 800px; height: 400px"
+                ></canvas>
+
+            </div>
+            <div class="tab-pane fade" id="tab2" role="tabpanel">
+
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        Select saved history file
+                    </button>
+                    <ul class="dropdown-menu" id="dropdown-menu" style="max-height: 300px; overflow-y: scroll;">
+                    </ul>
+                </div>
+
+                <br>
+
+
+                <div id="tempChart_history" class="col-12 col-md-6 monitor-chart"></div>
+                <div id="loadChart_history" class="col-12 col-md-6 monitor-chart"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <h2>CPU Info</h2>>
+            <div style="position: relative; background-color: #eee; padding: 10px; margin: 10px 0 10px 0;">
+                <button onclick="setMaxFrequency(-1)"
+                        class="btn btn-sm btn-light cornerButton"
+                        title="Refresh Frequency Policy">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+                <div>
+                    <p id="cpu-info" style="margin: 0;"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <h2>Metrics</h2>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th><i class="bi bi-cpu icon"></i> Metric</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr style="font-weight: bold;">
+                        <td><i class="bi bi-clock icon"></i> Load History</td>
+                        <td id="cpu-temp-history" style="font-weight: bold;line-height: 1.5;"></td>
+                    </tr>
+                    <tr style="font-weight: bold;">
+                        <td><i class="bi bi-thermometer-half"></i> CPU Temperature (C)</td>
+                        <td><span class="status-temp">N/A </span></td>
+                    </tr>
+                    <tr style="font-weight: bold;">
+                        <td><i class="bi bi-speedometer icon"></i> CPU Load</td>
+                        <td><span class="status-load">N/A </span>%</td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-memory icon"></i> RAM Usage</td>
+                        <td id="status-ram">N/A</td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-info-circle icon"></i> Update interval</td>
+                        <td><span id="app-interval">N/A</span></td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-info-circle icon"></i> Connection</td>
+                        <td><span id="conn-status"></span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <br><br><br>
+</div>
+<script>
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+
+    if (isStandalone) {
+        document.documentElement.classList.add('standalone');
+    }
+    console.log("IS STANDALONE: " + isStandalone);
+</script>
+<script type="module" src="/res/js/script.js"></script>
+</body>
+</html>
