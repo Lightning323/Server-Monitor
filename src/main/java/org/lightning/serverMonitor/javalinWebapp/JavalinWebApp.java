@@ -3,22 +3,15 @@ package org.lightning.serverMonitor.javalinWebapp;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
-import org.lightning.serverMonitor.CustomCommand;
 import org.lightning.serverMonitor.Main;
 import org.lightning.serverMonitor.javalinWebapp.onMessageHandlers.LoadHistoryHandler;
 import org.lightning.serverMonitor.javalinWebapp.onMessageHandlers.SetMaxFrequencyHandler;
 import org.lightning.serverMonitor.javalinWebapp.onMessageHandlers.ShutdownHandler;
-import org.lightning.serverMonitor.logging.HistoryRecord;
-import org.lightning.serverMonitor.platform.FrequencyPolicy;
 import org.lightning.serverMonitor.platform.Platform;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class JavalinWebApp {
     public static final String DELIMITER = "###";
@@ -28,7 +21,7 @@ public class JavalinWebApp {
 
 
     Set<WsContext> clients = ConcurrentHashMap.newKeySet();
-    WebappHistory history = new WebappHistory();
+//    WebappHistory history = new WebappHistory();
 
     List<OnMessageHandlers> onMessageHandlers = new ArrayList<>();
 
@@ -39,19 +32,19 @@ public class JavalinWebApp {
     }
 
     public void addDataPoint(double cpuTemp, double cpuLoad) {
-        HistoryRecord historyRecord = history.addRecord(cpuTemp, cpuLoad);
-        clients.forEach(session -> {
-            session.send(historyRecord.toString(LIVE_DATA_HEADER));
-        });
+//        HistoryRecord historyRecord = history.addRecord(cpuTemp, cpuLoad);
+//        clients.forEach(session -> {
+//            session.send(historyRecord.toString(LIVE_DATA_HEADER));
+//        });
 
     }
 
     public void sendHistory(WsMessageContext ctx) {
-        ctx.send(history.getRecordsAsString("history" + DELIMITER));
+//       ctx.send(history.getRecordsAsString("history" + DELIMITER));
     }
 
     public void sendHistory(WsMessageContext ctx, String filename) {
-        ctx.send(history.getRecordsAsString("history" + DELIMITER, filename));
+//        ctx.send(history.getRecordsAsString("history" + DELIMITER, filename));
     }
 
     public void start() {
@@ -80,15 +73,15 @@ public class JavalinWebApp {
                         ctx.send("history-records" + DELIMITER + getSortedHistoryRecords());
 
                         ctx.send("clear-charts" + DELIMITER);
-                        int l = Math.min(LIVE_DATA_POINTS, history.size());
-                        int start = history.size() - l;
-                        int end = history.size();
-                        int step = end - start > 100 ? 2 : 1;
+//                        int l = Math.min(LIVE_DATA_POINTS, history.size());
+//                        int start = history.size() - l;
+//                        int end = history.size();
+//                        int step = end - start > 100 ? 2 : 1;
 //                        System.out.println("start: " + start + " end: " + end + " step: " + step);
-                        String liveData = history.getRecordsAsString(LIVE_DATA_HEADER, start, end, step);
-                        ctx.send(liveData);
+//                        String liveData = history.getRecordsAsString(LIVE_DATA_HEADER, start, end, step);
+//                        ctx.send(liveData);
                         ctx.send("ram" + DELIMITER + Platform.SINGLETON.getOSRamUsage());
-                        ctx.send("cpu-temp-history" + DELIMITER + Main.tempMonitor.getTimeOverTemp());
+                        ctx.send("cpu-temp-history" + DELIMITER + Main.tempMonitor.cpuTimeOverTemp.getTimeOverTemp());
                     });
                     ws.onClose(ctx -> {
                         System.out.println("Disconnected: " + ctx.toString());
@@ -117,20 +110,21 @@ public class JavalinWebApp {
     }
 
     private String getSortedHistoryRecords() {
-        File[] historyRecords = new File(WebappHistory.TEMP_HISTORY_DIR).listFiles();
-        StringBuilder historyStr = new StringBuilder();
-
-        if (historyRecords != null && historyRecords.length > 0) {
-            //Sort them according to last modified
-            java.util.Arrays.sort(historyRecords, (f1, f2) -> {
-                return Long.compare(f2.lastModified(), f1.lastModified());
-            });
-            for (File record : historyRecords) {
-                //System.out.println(record.getName());
-                historyStr.append(record.getName()).append(",");
-            }
-        }
-        return historyStr.toString();
+//        File[] historyRecords = new File(WebappHistory.TEMP_HISTORY_DIR).listFiles();
+//        StringBuilder historyStr = new StringBuilder();
+//
+//        if (historyRecords != null && historyRecords.length > 0) {
+//            //Sort them according to last modified
+//            java.util.Arrays.sort(historyRecords, (f1, f2) -> {
+//                return Long.compare(f2.lastModified(), f1.lastModified());
+//            });
+//            for (File record : historyRecords) {
+//                //System.out.println(record.getName());
+//                historyStr.append(record.getName()).append(",");
+//            }
+//        }
+//        return historyStr.toString();
+        return null;
     }
 
 

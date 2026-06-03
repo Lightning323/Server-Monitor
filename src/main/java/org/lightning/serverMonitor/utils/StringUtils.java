@@ -27,4 +27,20 @@ public class StringUtils {
 
         return -1.0;
     }
+
+    public static String toCamelCase(String deviceName) {
+        StringBuilder result = new StringBuilder();
+        boolean capitalizeNext = false;
+        for (char c : deviceName.toCharArray()) {
+            if (c == '_' || c == ' ' || c == '-') {
+                capitalizeNext = true;
+            } else if (capitalizeNext) {
+                result.append(Character.toUpperCase(c));
+                capitalizeNext = false;
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
+    }
 }

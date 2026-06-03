@@ -1,12 +1,21 @@
-package org.lightning.serverMonitor.platform.sensors.linux;
+package org.lightning.serverMonitor.sensorMonitoring;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
-public class LMSensors {
-    public static List<SensorDevice> read() {
+public class SensorDump {
+    public List<SensorDevice> devices = new ArrayList<>();
+    public long timestamp;
+    public double cpuLoad;
+
+    public SensorDump(List<SensorDevice> devices, long timestamp) {
+        this.devices = devices;
+        this.timestamp = timestamp;
+    }
+
+    public static SensorDump read() {
         List<SensorDevice> devices = new ArrayList<>();
         try {
             Process process = new ProcessBuilder("sensors").start();
@@ -47,11 +56,10 @@ public class LMSensors {
         } catch (Exception e) {
             throw new RuntimeException("Error parsing sensors output", e);
         }
-        return devices;
+        return new SensorDump(devices, System.currentTimeMillis());
     }
 
-
-    public static SensorProperty getSensorProperty(List<SensorDevice> devices, String sensorName, String targetKey) {
+    public SensorProperty getSensor(String sensorName, String targetKey) {
         for (SensorDevice device : devices) {
             if (device.deviceName.equals(sensorName)) {
                 for (SensorProperty prop : device.properties) {
@@ -64,4 +72,15 @@ public class LMSensors {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "SensorData{" +
+                "devices=" + devices +
+                ", timestamp=" + timestamp +
+                '}';
+    }
 }
+
+
+

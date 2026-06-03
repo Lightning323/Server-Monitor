@@ -1,4 +1,4 @@
-package org.lightning.serverMonitor.platform.sensors.linux;
+package org.lightning.serverMonitor.sensorMonitoring;
 
 import java.util.ArrayList;
 import java.util.List;

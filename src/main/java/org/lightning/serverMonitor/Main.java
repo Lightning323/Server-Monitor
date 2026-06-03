@@ -1,12 +1,10 @@
 package org.lightning.serverMonitor;
 
-import org.lightning.serverMonitor.monitor.SystemMonitorService;
+import org.lightning.serverMonitor.monitor.SensorMonitor;
 import org.lightning.serverMonitor.javalinWebapp.JavalinWebApp;
 import org.lightning.serverMonitor.platform.Platform;
 import org.lightning.serverMonitor.utils.ExtendedLogger;
 import org.lightning.serverMonitor.utils.MiscUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class Main {
@@ -34,7 +32,7 @@ public class Main {
     public static Settings settings = Settings.load();
 
     public static JavalinWebApp webApp = new JavalinWebApp();
-    public static SystemMonitorService tempMonitor = new SystemMonitorService(Platform.SINGLETON, webApp);
+    public static SensorMonitor tempMonitor = new SensorMonitor(Platform.SINGLETON);
 
 
     public static void main(String[] args) {
