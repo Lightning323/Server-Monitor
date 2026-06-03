@@ -18,7 +18,6 @@ class Platform_Windows extends Platform {
 
     public Platform_Windows() {
         super();
-        if (Main.TEST_MODE) return;
         try {
             coreTempInterface = new CoreTempInterface(5200);
         } catch (IOException e) {
@@ -123,40 +122,40 @@ class Platform_Windows extends Platform {
     }
 
     public void shutdown(String reason) {
-        Main.LOGGER.info("Shutting down" + (reason == null ? "" : ": " + reason));
-        if (Main.TEST_MODE) {
-            System.exit(0);
-        } else {
-            //Try 3 times to shutdown
-            String err = "";
-            int attempts = 0;
-            for (int i = 0; i < 3; i++) {
-                try {
-                    Thread.sleep(5000);
-                    ProcessBuilder processBuilder = new ProcessBuilder("shutdown", "/p");
-                    Process process = processBuilder.start();
-                    int exitCode = process.waitFor();
-                    System.out.println("Shutdown command executed with exit code: " + exitCode);
-                    // Optionally, you can check the exit code for success (usually 0)
-                    if (exitCode == 0) { //If we successfully shutdown
-                        return;
-                    } else {
-                        System.err.println("Shutdown command might have failed.");
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-                        String line;
-
-                        while ((line = reader.readLine()) != null) {
-                            System.err.println(line);
-                            err = line;
-                        }
-                        attempts++;
-                    }
-                } catch (InterruptedException | IOException e) {
-                    Main.LOGGER.error("Failed shutdown attempt",e);
-                }
-            }
-            Main.LOGGER.info("Shutdown command might have failed. attempts: " + attempts + "\n`" + err + "`");
-        }
+//        Main.LOGGER.info("Shutting down" + (reason == null ? "" : ": " + reason));
+//        if (Main.TEST_MODE) {
+//            System.exit(0);
+//        } else {
+//            //Try 3 times to shutdown
+//            String err = "";
+//            int attempts = 0;
+//            for (int i = 0; i < 3; i++) {
+//                try {
+//                    Thread.sleep(5000);
+//                    ProcessBuilder processBuilder = new ProcessBuilder("shutdown", "/p");
+//                    Process process = processBuilder.start();
+//                    int exitCode = process.waitFor();
+//                    System.out.println("Shutdown command executed with exit code: " + exitCode);
+//                    // Optionally, you can check the exit code for success (usually 0)
+//                    if (exitCode == 0) { //If we successfully shutdown
+//                        return;
+//                    } else {
+//                        System.err.println("Shutdown command might have failed.");
+//                        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+//                        String line;
+//
+//                        while ((line = reader.readLine()) != null) {
+//                            System.err.println(line);
+//                            err = line;
+//                        }
+//                        attempts++;
+//                    }
+//                } catch (InterruptedException | IOException e) {
+//                    Main.LOGGER.error("Failed shutdown attempt",e);
+//                }
+//            }
+//            Main.LOGGER.info("Shutdown command might have failed. attempts: " + attempts + "\n`" + err + "`");
+//        }
     }
 
     @Override

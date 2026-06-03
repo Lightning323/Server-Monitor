@@ -1,5 +1,7 @@
 package org.lightning.serverMonitor;
 
+import io.javalin.websocket.WsConnectContext;
+import org.lightning.serverMonitor.javalinWebapp.packets.ServerInfoPacket;
 import org.lightning.serverMonitor.monitor.SensorMonitor;
 import org.lightning.serverMonitor.javalinWebapp.JavalinWebApp;
 import org.lightning.serverMonitor.platform.Platform;
@@ -8,56 +10,44 @@ import org.lightning.serverMonitor.utils.MiscUtils;
 
 
 public class Main {
-
-    /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public static final String APP_VERSION = "1.0.0";
-    public static boolean TEST_MODE = false;
-
-    //2fa Key
-    private static final String TEST_SECRET_KEY = "SLDK4NN5YPMV7SV5"; //Test secret key
-    private static final String SECRET_KEY_2FA = TEST_SECRET_KEY;
-
+    public static final boolean TEST_MODE = true;
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static ExtendedLogger LOGGER = new ExtendedLogger();
-    public static TaskbarTray taskbarTray;
-
-    public static long minutesSinceAwake = 0;
+    public static TaskbarTray taskbarTray = new TaskbarTray();
     public static Settings settings = Settings.load();
-
-    public static JavalinWebApp webApp = new JavalinWebApp();
+    public static JavalinWebApp webApp;
     public static SensorMonitor tempMonitor = new SensorMonitor(Platform.SINGLETON);
 
 
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
         System.out.println("Version: " + APP_VERSION);
-
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             LOGGER.notification("shutting down; Runtime: " + MiscUtils.convertMsToHMS(System.currentTimeMillis() - startTime));
         }));
 
-        taskbarTray = new TaskbarTray();
-
-        //Set the max frequency on startup
-        if (settings.STARTUP_FREQUENCY_MHZ > 0) {
-            System.out.println("Setting max frequency to " + Main.settings.STARTUP_FREQUENCY_MHZ);
-            Platform.SINGLETON.setMaxFrequencyMHZ(Main.settings.STARTUP_FREQUENCY_MHZ);
-        }
-
         //Start webapp
-        webApp.start();
+        webApp = new JavalinWebApp() {
+            public void onConnect(WsConnectContext ctx) {
+                super.onConnect(ctx);
+                System.out.println("Client connected: ");
+                sendPacket(ctx, new ServerInfoPacket(APP_VERSION, Main.settings.SERVER_NAME));
+            }
+        };
+        webApp.registerPacket(ServerInfoPacket.class);
 
-        //Start temp monitor
-        tempMonitor.start();
+        webApp.start(3000);
+        System.out.println("Webapp started on port 3000");
 
-        //Start taskbar tray
-        taskbarTray.start();
+//        //Start temp monitor
+//        tempMonitor.start();
+//
+//        //Start taskbar tray
+//        taskbarTray.start();
     }
 }

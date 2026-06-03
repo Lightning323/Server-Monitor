@@ -8,7 +8,6 @@ import java.util.List;
 public class SensorDump {
     public List<SensorDevice> devices = new ArrayList<>();
     public long timestamp;
-    public double cpuLoad;
 
     public SensorDump(List<SensorDevice> devices, long timestamp) {
         this.devices = devices;
