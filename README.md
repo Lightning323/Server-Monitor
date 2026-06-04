@@ -30,7 +30,7 @@ Server-Monitor relies on `lm-sensors` to pull data from your hardware.
 # Install sensors
 sudo apt update && sudo apt install lm-sensors -y
 
-# Detect hardware sensors (Answer YES to all prompts)
+# Detect hardware sensors (You will be required to answer YES or NO to detect various sensors)
 sudo sensors-detect
 
 # Verify it works
