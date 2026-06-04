@@ -154,19 +154,49 @@ function requestHistory() {
     setChartShown(historyChart4, !isChartEmpty(historyChart4));
 
     // 1. Get the raw date from the input
-    const rawDate = new Date(dateSelector.value); // e.g., 2026-06-03
-    const startDate = new Date(Date.UTC(
-        rawDate.getUTCFullYear(),
-        rawDate.getUTCMonth(),
-        rawDate.getUTCDate(),
-        0, 0, 0, 0
-    ));
+    const dateString = dateSelector.value;
+    const [year, month, day] = dateString.split('-').map(Number);
 
-    const endDate = new Date(startDate);
-    endDate.setUTCHours(23, 59, 59, 999);
+// Use local date constructor (Note: Month is 0-indexed in JS)
+    const targetDate = new Date(year, month - 1, day);
 
-    console.log("Start (UTC):", startDate); // 2026-06-03T00:00:00.000Z
-    console.log("End (UTC):", endDate);     // 2026-06-03T23:59:59.999Z
+    const now = new Date();
+
+// Now the rest of your logic will work correctly in local time
+    const isToday = targetDate.getFullYear() === now.getFullYear() &&
+        targetDate.getMonth() === now.getMonth() &&
+        targetDate.getDate() === now.getDate();
+
+    let endDate, startDate;
+
+    if (isToday) {
+        console.log("Loading history for Today");
+        endDate = new Date();
+        // Start date is 24 hours prior
+        startDate = new Date(endDate.getTime() - (24 * 60 * 60 * 1000));
+    } else {
+        console.log("Loading history for "+targetDate.toLocaleDateString());
+        // End date is 11:59:59.999 PM of the selected day (Local)
+        endDate = new Date(targetDate);
+        endDate.setHours(23, 59, 59, 999);
+
+        // Start date is 24 hours before that local midnight
+        startDate = new Date(endDate.getTime() - (24 * 60 * 60 * 1000));
+    }
+
+    const options = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    };
+
+    console.log("Start:", startDate.toLocaleString(undefined, options));
+    console.log("End:", endDate.toLocaleString(undefined, options));
 
     var selectedSensors = []
     sendHistoryRequest(historyChart1, startDate, endDate, selectedSensors);
