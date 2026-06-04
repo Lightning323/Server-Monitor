@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 public class SensorDump {
     public List<SensorDevice> devices = new ArrayList<>();
@@ -56,6 +57,20 @@ public class SensorDump {
             throw new RuntimeException("Error parsing sensors output", e);
         }
         return new SensorDump(devices, System.currentTimeMillis());
+    }
+
+    public static String getSensorID(SensorDevice device, SensorProperty prop) {
+        return ((device.deviceName) + "__"
+                + (device.adapter) + "__"
+                + (prop.key)).replaceAll("[^a-zA-Z0-9_]", "_");
+    }
+
+    public void forEachSensor(BiConsumer<String, String> sensor) {
+        for (SensorDevice device : devices) {
+            for (SensorProperty prop : device.properties) {
+                sensor.accept(getSensorID(device, prop), prop.value);
+            }
+        }
     }
 
     public SensorProperty getSensor(String sensorName, String targetKey) {

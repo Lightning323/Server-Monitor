@@ -1,7 +1,6 @@
 package org.lightning.serverMonitor.javalinWebapp.packets;
 
 import org.lightning.serverMonitor.sensorMonitoring.SensorDump;
-import org.lightning.serverMonitor.monitor.SensorDatabaseWriter;
 
 import java.util.HashMap;
 
@@ -13,7 +12,7 @@ class SensorPacketValue {
         this.sensors = new HashMap<>();
         dump.devices.forEach((device) -> {
             device.properties.forEach((property) -> {
-                sensors.put(SensorDatabaseWriter.getSensorColumn(device, property), property.value);
+                sensors.put(SensorDump.getSensorID(device, property), property.value);
             });
         });
         this.timestamp = dump.timestamp;

@@ -23,7 +23,7 @@ public class SensorDatabaseWriter {
         Set<String> discoveredKeys = new HashSet<>();
         for (SensorDevice device : dumpList.get(0).devices) {
             for (SensorProperty prop : device.properties) {
-                discoveredKeys.add(getSensorColumn(device, prop));
+                discoveredKeys.add(SensorDump.getSensorID(device, prop));
             }
         }
 
@@ -42,7 +42,7 @@ public class SensorDatabaseWriter {
                 // Map of all keys in this specific dump
                 Map<String, String> rowData = new HashMap<>();
                 for (SensorDevice d : dump.devices)
-                    for (SensorProperty p : d.properties) rowData.put(getSensorColumn(d, p), p.value);
+                    for (SensorProperty p : d.properties) rowData.put(SensorDump.getSensorID(d, p), p.value);
 
                 // Set values dynamically for each column
                 int colIndex = 2;
@@ -151,9 +151,4 @@ public class SensorDatabaseWriter {
         return results;
     }
 
-    public static String getSensorColumn(SensorDevice device, SensorProperty prop) {
-        return ((device.deviceName) + "__"
-                + (device.adapter) + "__"
-                + (prop.key)).replaceAll("[^a-zA-Z0-9_]", "_");
-    }
 }

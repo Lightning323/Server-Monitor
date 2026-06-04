@@ -1,6 +1,7 @@
 package org.lightning.serverMonitor;
 
 import io.javalin.websocket.WsConnectContext;
+import org.lightning.serverMonitor.config.Config;
 import org.lightning.serverMonitor.javalinWebapp.packets.*;
 import org.lightning.serverMonitor.monitor.SensorMonitor;
 import org.lightning.serverMonitor.javalinWebapp.JavalinWebApp;
@@ -19,7 +20,7 @@ public class Main {
 
     public static ExtendedLogger LOGGER = new ExtendedLogger();
     public static TaskbarTray taskbarTray = new TaskbarTray();
-    public static Settings settings = Settings.load();
+    public static Config config = Config.load();
     public static JavalinWebApp webApp;
     public static SensorMonitor tempMonitor = new SensorMonitor(Platform.SINGLETON);
 
@@ -35,8 +36,9 @@ public class Main {
         webApp = new JavalinWebApp() {
             public void onConnect(WsConnectContext ctx) {
                 super.onConnect(ctx);
-                sendPacket(ctx, new ServerInfoPacket(APP_VERSION, Main.settings.SERVER_NAME));
+                sendPacket(ctx, new ServerInfoPacket(APP_VERSION, Main.config.SERVER_NAME));
                 sendPacket(ctx, new CpuInfoPacket(Platform.SINGLETON.getCPUInfo()));
+                sendPacket(ctx, new SensorAliasesPacket(config.SENSOR_ALIASES));
             }
         };
         webApp.registerPacket(ServerInfoPacket.class);
@@ -44,7 +46,8 @@ public class Main {
         webApp.registerPacket(CpuInfoPacket.class);
         webApp.registerPacket(SensorHistoryPacket.class);
         webApp.registerPacket(SensorHistoryRequestPacket.class);
-        webApp.start(3000);
+        webApp.registerPacket(SensorAliasesPacket.class);
+        webApp.start(config.WEBAPP_PORT);
 
         //Start temp monitor
         tempMonitor.start();

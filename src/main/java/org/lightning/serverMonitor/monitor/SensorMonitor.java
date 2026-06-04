@@ -48,7 +48,7 @@ public class SensorMonitor {
             } catch (Throwable e) {
                 Main.LOGGER.error("Error with CPU temp monitor", e);
             }
-        }, 0, Main.settings.SENSORS_UPDATE_MS, TimeUnit.MILLISECONDS);
+        }, 0, Main.config.SENSORS_UPDATE_MS, TimeUnit.MILLISECONDS);
     }
 
 

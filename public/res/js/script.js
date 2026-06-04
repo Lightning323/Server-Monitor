@@ -17,6 +17,17 @@ PacketRegistry.register("SENSOR_UPDATE", (payload) => {
     window.updateTempChart(new Date(payload.timestamp), payload.temperature);
 });
 
+let sensorAliases = {};
+
+function aliasedName(sensorID){
+    return sensorAliases[sensorID] || sensorID;
+}
+
+PacketRegistry.register("SensorAliasesPacket", (payload) => {
+    sensorAliases = payload.aliases;
+    console.log("sensorAliases", sensorAliases);
+});
+
 PacketRegistry.register("ServerInfoPacket", (payload) => {
     // console.log(payload);
     // console.log(payload.name);
@@ -47,6 +58,11 @@ let chart4 = setupChart(document.getElementById("sensorChart4"),
         color: "purple", maxPoints: 200, latestDataPoint: true
     });
 
+setChartShown(chart1, false);
+setChartShown(chart2, false);
+setChartShown(chart3, false);
+setChartShown(chart4, false);
+
 let historyChart1 = setupChart(document.getElementById("historyChart1"),
     {
         color: "blue", label: "History", latestDataPoint: false
@@ -63,6 +79,7 @@ let historyChart4 = setupChart(document.getElementById("historyChart4"),
     {
         color: "purple", label: "History", latestDataPoint: false
     });
+
 setChartShown(historyChart1, false);
 setChartShown(historyChart2, false);
 setChartShown(historyChart3, false);
@@ -77,26 +94,26 @@ function updateDropdown(items, dropdownElement, chart, historyChart) {
     dropdown.innerHTML = '';
 
     dropdown.innerHTML = items.map(item =>
-        `<li><a class="dropdown-item" href="#">${item}</a></li>`)
+        `<li><a class="dropdown-item" href="#" data-sensor="${item}">${aliasedName(item)}</a></li>`)
         .join('');
     dropdown.innerHTML += `<li><a class="dropdown-item" href="#">None</a></li>`;
 
     dropdown.querySelectorAll('.dropdown-item').forEach(item => {
 
         item.addEventListener('click', (event) => {
+            var key = event.target.getAttribute("data-sensor");
+            console.log("User selected:", key);
             clearData(chart);
             clearData(historyChart);
-            if (item.innerText === "None") {
+            if (key === "None") {
                 chart._selectedSensor = undefined;
                 historyChart._selectedSensor = undefined;
+                label.innerText = "None";
                 return;
             }
-            chart._selectedSensor = event.target.innerText;
-            historyChart._selectedSensor = event.target.innerText;
-            label.innerText = chart._selectedSensor;
-            console.log("User selected:", chart._selectedSensor);
-
-
+            chart._selectedSensor = key;
+            historyChart._selectedSensor = key;
+            label.innerText = event.target.innerText;
             updateChartLabel(chart, 1, chart._selectedSensor);
             updateChartLabel(historyChart, 1, chart._selectedSensor);
         });
@@ -124,7 +141,7 @@ historyReloadButton.addEventListener('click', () => {
     requestHistory();
 });
 
-function requestHistory(){
+function requestHistory() {
     // 1. Get the raw date from the input
     const rawDate = new Date(dateSelector.value); // e.g., 2026-06-03
     const startDate = new Date(Date.UTC(
@@ -146,9 +163,9 @@ function requestHistory(){
     sendHistoryRequest(historyChart3, startDate, endDate, selectedSensors);
     sendHistoryRequest(historyChart4, startDate, endDate, selectedSensors);
 
-    if(selectedSensors.length > 0){
+    if (selectedSensors.length > 0) {
         historyProgress.style.display = "flex";
-    }else{
+    } else {
         alert("No sensors selected");
     }
 }
@@ -167,6 +184,7 @@ function sendHistoryRequest(historyChart, startDate, endDate, selectedSensors) {
 }
 
 PacketRegistry.register("SensorDumpPacket", (payload) => {
+    // console.log(payload);
     let timestamp = new Date(payload.dump.timestamp);
     let sensors = payload.dump.sensors;
 
@@ -219,7 +237,7 @@ function updateHistoryChart(chartElement, payload) {
         timestamps.push(new Date(entry.t));
         values.push(entry.v);
     });
-    updateChartLabel(chartElement, 1, sensor);
+    updateChartLabel(chartElement, 1, aliasedName(sensor));
     updateDataBatch(chartElement, timestamps, values);
     if (payload.finalPacket) {
         historyProgress.style.display = "none";

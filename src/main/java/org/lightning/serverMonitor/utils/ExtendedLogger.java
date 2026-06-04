@@ -13,9 +13,9 @@ public class ExtendedLogger {
     }
 
     private final void notify(String severity, String message) {
-        if (Main.settings.DISCORD_WEBHOOK_URL != null) {
-            DiscordUtils.sendWebhookMessage(Main.settings.DISCORD_WEBHOOK_URL,
-                    "`" + Main.settings.SERVER_NAME + " [" + severity + "]: " + message + "`");
+        if (Main.config.DISCORD_WEBHOOK_URL != null) {
+            DiscordUtils.sendWebhookMessage(Main.config.DISCORD_WEBHOOK_URL,
+                    "`" + Main.config.SERVER_NAME + " [" + severity + "]: " + message + "`");
         }
     }
 
