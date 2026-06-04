@@ -1,3 +1,4 @@
+const connectionStatusElement = document.getElementById("connectionStatus");
 // // --- The Packet Registry ---
 const PacketRegistry = {
     handlers: {},
@@ -38,11 +39,11 @@ let socket;
 
 function connect() {
     let url = "ws://" + window.location.host + "/ws";
-    console.log("Connecting to server at " + url);
+    status("Connecting...");
     socket = new WebSocket(url);
 
     socket.onopen = () => {
-        console.log("Connected to server");
+        status("Connected to server");
     };
 
     socket.onmessage = (event) => {
@@ -53,6 +54,11 @@ function connect() {
     socket.onclose = () => {
         setTimeout(connect, 1000); // Reconnect logic
     };
+}
+
+function status(msg){
+    console.log(msg);
+    connectionStatusElement.innerText = msg;
 }
 
 export {connect, PacketRegistry};

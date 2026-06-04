@@ -30,7 +30,7 @@
 <body>
 
 <header id="title">
-    <i class="bi bi-server"></i> <span id="server-name"></span> Monitor <span id="app-version">N/A</span>
+    <i class="bi bi-server"></i> <span id="server-name"></span> Monitor
 </header>
 
 
@@ -182,6 +182,13 @@
 
     <br><br><br>
 </div>
+<footer class="footer">
+    <div class="container">
+        <span class="text-muted">Server Monitor v<span id="app-version">N/A</span></span>
+        <span class="text-muted"> by <a href="https://github.com/Lightning323/Server-Monitor">Lightning323</a></span>
+        <p id="connectionStatus">Disconnected</p>
+    </div>
+</footer>
 <script>
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches
         || window.navigator.standalone === true;
