@@ -10,11 +10,14 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.lightning.serverMonitor.Main.LOGGER;
 
 public class Config {
+
     public String SERVER_NAME = "Server";
     //Webapp
     public int WEBAPP_PORT = 3000;
@@ -23,9 +26,8 @@ public class Config {
     //Sensors
     public int SENSORS_UPDATE_MS = 1000;
 
-//    public String LINUX_CPU_TEMP_SENSOR_NAME = "k10temp-pci-00c3";
+    //    public String LINUX_CPU_TEMP_SENSOR_NAME = "k10temp-pci-00c3";
 //    public String LINUX_CPU_TEMP_KEY = "Tctl";
-
     public HashMap<String, String> SENSOR_ALIASES = new HashMap<>();
 
     //========================================================================================================================

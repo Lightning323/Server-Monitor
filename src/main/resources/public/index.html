@@ -11,33 +11,33 @@
     <meta name="apple-mobile-web-app-title" content="Webapp">
     <link rel="apple-touch-icon" href="res/icon-192.png">
 
+    <!-- bootstrap -->
     <link rel="stylesheet" href="res/bootstrap/css/bootstrap.css">
-
     <link rel="stylesheet" href="res/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uplot@1.6.24/dist/uPlot.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/uplot@1.6.24/dist/uPlot.iife.min.js"></script>
+    <!-- https://github.com/leeoniya/uPlot/releases/tag/1.6.32 -->
+    <link rel="stylesheet" href="res/uPlot/dist/uPlot.min.css">
+    <script src="res/uPlot/dist/uPlot.iife.min.js"></script>
     <script type="importmap">
         {
           "imports": {
-            "uplot": "https://cdn.jsdelivr.net/npm/uplot@1.6.24/dist/uPlot.esm.js"
+            "uplot": "./res/uPlot/dist/uPlot.esm.js"
           }
         }
     </script>
 </head>
 <body>
 
-<div id="title">
-    <h1 style="font-size: 1.5em;"><span id="server-name"></span> Monitor <span id="app-version">N/A</span></h1>
-</div>
+<header id="title">
+    <i class="bi bi-server"></i> <span id="server-name"></span> Monitor <span id="app-version">N/A</span>
+</header>
 
 
 <div class="container">
     <div class="row">
         <h2>Sensors</h2>
-        <div class="d-flex flex-wrap gap-2">
+        <div class="d-flex flex-wrap">
             <div class="dropdown" id="sensor-dropdown-1">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
                         aria-expanded="false">
@@ -88,11 +88,9 @@
         </ul>
 
         <!-- Tab panes -->
-        <div class="tab-content border border-top-0 p-3">
+        <div class="tab-content border border-top-0 p-3" style="min-height:100px;">
             <!-- Live Data Tab -->
             <div class="tab-pane fade show active" id="tab1" role="tabpanel">
-
-
                 <div class="chart-grid">
                     <div id="sensorChart1"></div>
                     <div id="sensorChart2"></div>
@@ -126,44 +124,56 @@
 
     </div>
 
-    <div class="row">
-        <div class="col-12 col-md-6">
-            <h2>CPU Info</h2>
-            <div id="cpu-info"
-                 style="
-                 background-color: #eee;
-                 padding: 10px;
-                 margin: 10px 0 10px 0;">
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6">
+    <div class="row" style="margin-top: 10px;">
+        <div class="col-12">
             <h2>Metrics</h2>
             <div class="table-container">
                 <table class="table">
                     <thead>
                     <tr>
-                        <th><i class="bi bi-cpu icon"></i> Metric</th>
+                        <th>Metric</th>
                         <th>Value</th>
                     </tr>
                     </thead>
-                    <tbody>
-<!--                    <tr style="font-weight: bold;">-->
-<!--                        <td><i class="bi bi-clock icon"></i> Load History</td>-->
-<!--                        <td id="cpu-temp-history" style="font-weight: bold;line-height: 1.5;"></td>-->
-<!--                    </tr>-->
-<!--                    <tr style="font-weight: bold;">-->
-<!--                        <td><i class="bi bi-thermometer-half"></i> CPU Temperature (C)</td>-->
-<!--                        <td><span class="status-temp">N/A </span></td>-->
-<!--                    </tr>-->
-<!--                    <tr style="font-weight: bold;">-->
-<!--                        <td><i class="bi bi-speedometer icon"></i> CPU Load</td>-->
-<!--                        <td><span class="status-load">N/A </span>%</td>-->
-<!--                    </tr>-->
-<!--                    <tr>-->
-<!--                        <td><i class="bi bi-memory icon"></i> RAM Usage</td>-->
-<!--                        <td id="status-ram">N/A</td>-->
-<!--                    </tr>-->
+                    <tbody data-bs-toggle="collapse" data-bs-target="#cpu-details">
+                    <tr>
+                        <td colspan="2"><strong><i class="bi bi-chevron-down"></i> <i class="bi bi-cpu icon"></i>
+                            CPU</strong></td>
+                    </tr>
+                    </tbody>
+                    <tbody id="cpu-details" class="collapse show">
+                    <tr>
+                        <td>CPU Vendor</td>
+                        <td><span id="status-cpu-vendor">N/A </span></td>
+                    </tr>
+                    <tr>
+                        <td>CPU Governor</td>
+                        <td><span id="status-cpu-governer">N/A </span></td>
+                    </tr>
+                    <tr>
+                        <td>Power State</td>
+                        <td><span id="status-cpu-power-state">N/A </span></td>
+                    </tr>
+                    <tr>
+                        <td>CPU Software Frequency</td>
+                        <td><code id="status-cpu-software-freq">N/A </code></td>
+                    </tr>
+                    <tr>
+                        <td>CPU Hardware Frequency</td>
+                        <td><code id="status-cpu-hardware-freq">N/A </code></td>
+                    </tr>
+
+                    <tbody data-bs-toggle="collapse" data-bs-target="#memory-details">
+                    <tr>
+                        <td colspan="2"><strong><i class="bi bi-chevron-down"></i> <i class="bi bi-memory icon"></i>
+                            Memory</strong></td>
+                    </tr>
+                    </tbody>
+                    <tbody id="memory-details" class="collapse show">
+                    <tr>
+                        <td>RAM Usage</td>
+                        <td id="status-ram">N/A</td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -182,6 +192,6 @@
     console.log("IS STANDALONE: " + isStandalone);
 </script>
 <script type="module" src="/res/js/script.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="res/bootstrap/js/bootstrap.bundle.js"></script>
 </body>
 </html>

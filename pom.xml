@@ -102,22 +102,22 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.3.0</version> <!-- Use the latest version -->
+                <version>3.3.0</version>
                 <executions>
                     <execution>
-                        <phase>package</phase> <!-- During the packaging phase -->
+                        <phase>package</phase>
                         <goals>
-                            <goal>single</goal> <!-- Create the assembly -->
+                            <goal>single</goal>
                         </goals>
                         <configuration>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-main-class</descriptorRef> <!-- Include the main class -->
-                            </descriptorRefs>
                             <archive>
                                 <manifestEntries>
-                                    <Main-Class>org.lightning.serverMonitor.Main</Main-Class> <!-- Set your main class here -->
+                                    <Main-Class>org.lightning.serverMonitor.Main</Main-Class>
                                 </manifestEntries>
                             </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
                         </configuration>
                     </execution>
                 </executions>

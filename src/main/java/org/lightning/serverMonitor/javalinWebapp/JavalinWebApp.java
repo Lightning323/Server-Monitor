@@ -10,6 +10,7 @@ import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
+import org.lightning.serverMonitor.Main;
 import org.lightning.serverMonitor.javalinWebapp.packets.WsPacket;
 
 import java.io.File;
@@ -28,15 +29,13 @@ public class JavalinWebApp {
     public JavalinWebApp() {
         app = Javalin.create(config -> {
             config.jsonMapper(new JavalinGson());
-//            if (System.getProperty("env", "dev").equals("dev")) {
-                // During development, point to the disk, NOT the JAR
-                File f = new File("public");
-                System.out.println(f.getAbsolutePath());
+            if (Main.DEV_ENV) {
+                File f = new File("src/main/resources/public");
+                System.out.println("Webapp public is at " + f.getAbsolutePath());
                 config.staticFiles.add(f.getAbsolutePath().toString(), Location.EXTERNAL);
-//            } else { //TODO: figure out an effective way to do this in production
-//                // In production, keep using resources
-//                config.staticFiles.add("/public", Location.CLASSPATH);
-//            }
+            } else {
+                config.staticFiles.add("/public", Location.CLASSPATH);
+            }
         });
         app.ws("/ws", ws -> {
             ws.onConnect(this::onConnect);

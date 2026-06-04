@@ -1,5 +1,7 @@
 package org.lightning.serverMonitor.sensorMonitoring;
 
+import org.lightning.serverMonitor.platform.Platform;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -56,12 +58,19 @@ public class SensorDump {
         } catch (Exception e) {
             throw new RuntimeException("Error parsing sensors output", e);
         }
+
+        //Append additional devices
+        double cpuLoad = Platform.SINGLETON.getCPULoad();
+        SensorDevice appendedDevice = new SensorDevice();
+        appendedDevice.deviceName = "cpu";
+        appendedDevice.properties.add(new SensorProperty("load", String.format("%.2f", cpuLoad) + "%"));
+        devices.add(appendedDevice);
         return new SensorDump(devices, System.currentTimeMillis());
     }
 
     public static String getSensorID(SensorDevice device, SensorProperty prop) {
         return ((device.deviceName) + "__"
-                + (device.adapter) + "__"
+                + (device.adapter == null || device.adapter.isBlank() ? "" : device.adapter + "__")
                 + (prop.key)).replaceAll("[^a-zA-Z0-9_]", "_");
     }
 

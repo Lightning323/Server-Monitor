@@ -12,7 +12,7 @@ import org.lightning.serverMonitor.utils.MiscUtils;
 
 public class Main {
     public static final String APP_VERSION = "1.0.0";
-    public static final boolean TEST_MODE = true;
+    public static final boolean DEV_ENV = System.getProperty("env", "dev").equals("dev");
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@ public class Main {
 
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
-        System.out.println("Version: " + APP_VERSION);
+        System.out.println("Version: " + APP_VERSION + "; Dev environment: " + DEV_ENV);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             LOGGER.notification("shutting down; Runtime: " + MiscUtils.convertMsToHMS(System.currentTimeMillis() - startTime));
         }));
@@ -37,16 +37,18 @@ public class Main {
             public void onConnect(WsConnectContext ctx) {
                 super.onConnect(ctx);
                 sendPacket(ctx, new ServerInfoPacket(APP_VERSION, Main.config.SERVER_NAME));
-                sendPacket(ctx, new CpuInfoPacket(Platform.SINGLETON.getCPUInfo()));
+                sendPacket(ctx, Platform.SINGLETON.getSystemInfo());
                 sendPacket(ctx, new SensorAliasesPacket(config.SENSOR_ALIASES));
+//                sendPacket(ctx, new SensorsSelectedPacket(config.SELECTED_SENSORS));
             }
         };
         webApp.registerPacket(ServerInfoPacket.class);
         webApp.registerPacket(SensorDumpPacket.class);
-        webApp.registerPacket(CpuInfoPacket.class);
+        webApp.registerPacket(SystemInfo.class);
         webApp.registerPacket(SensorHistoryPacket.class);
         webApp.registerPacket(SensorHistoryRequestPacket.class);
         webApp.registerPacket(SensorAliasesPacket.class);
+//        webApp.registerPacket(SensorsSelectedPacket.class);
         webApp.start(config.WEBAPP_PORT);
 
         //Start temp monitor

@@ -18,7 +18,7 @@ const ro = new ResizeObserver(entries => {
 
 function setupChart(container, {
     color = "red",
-    label = "Label",
+    label = "Value",
     yMin,
     yMax,
     maxPoints,
@@ -32,11 +32,6 @@ function setupChart(container, {
     const wrapper = document.createElement("div");
     wrapper.style.position = "relative";
     wrapper.style.width = "100%";
-
-    const btn = document.createElement("span");
-    btn.innerText = "Double-Click to Reset Zoom";
-    btn.style.cssText = "position: absolute; top: 10px; right: 10px; z-index: 100; opacity: 0.5; user-select: none; pointer-events: none;";
-    wrapper.appendChild(btn);
 
 
     const chartTarget = document.createElement("div");
@@ -61,12 +56,20 @@ function setupChart(container, {
     const chart = new uPlot(opts, [[], []], chartTarget);
     chart.maxPoints = maxPoints;
 
+
     const canvasLabel = document.createElement("span");
     canvasLabel.innerText = "";
     canvasLabel.style.cssText = "position: absolute; top: 10px; left: 40px; z-index: 100; font-size: 1.2em; user-select: none; pointer-events: none;";
+    if (latestDataPoint) canvasLabel.style.cssText += " font-weight: bold;";
     wrapper.appendChild(canvasLabel);
     chart._canvasLabel = canvasLabel;
     chart._labelLatestDataPoint = latestDataPoint;
+
+    const canvasLabel2 = document.createElement("span");
+    canvasLabel2.innerText = "Double-Click to Reset Zoom";
+    canvasLabel2.style.cssText = "position: absolute; top: 10px; right: 10px; z-index: 100; user-select: none; pointer-events: none;";
+    wrapper.appendChild(canvasLabel2);
+    chart._canvasLabel2 = canvasLabel2;
 
     // 4. Store the reference directly on the element the Observer watches
     // We observe the 'chartTarget' div
@@ -127,6 +130,7 @@ function updateDataBatch(chart, timestamps, values) {
     }
 
     chart.setData([ts, vals]);
+    // setChartShown(chart, !isChartEmpty(chart));
 }
 
 function isChartEmpty(u) {
@@ -148,12 +152,14 @@ function setChartShown(chart, isVisible) {
     }
 }
 
-function updateChartLabel(chart, seriesIndex, newLabel) {
-    chart.series[seriesIndex].label = newLabel;
-    if (chart._canvasLabel) {
+function updateChartLabel(chart, newLabel) {
+    if (newLabel === undefined || newLabel === null) return;
+    if (chart._labelLatestDataPoint) {
+        chart._canvasLabel2.innerText = newLabel;
+    } else {
         chart._canvasLabel.innerText = newLabel;
     }
-    chart.redraw();
+    if (!isChartEmpty(chart)) chart.redraw();
 }
 
 export {setupChart, updateData, updateDataBatch, clearData, updateChartLabel, isChartEmpty, setChartShown};

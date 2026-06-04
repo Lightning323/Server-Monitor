@@ -2,6 +2,7 @@ package org.lightning.serverMonitor.platform;
 
 import org.lightning.serverMonitor.CustomCommand;
 import org.lightning.serverMonitor.Main;
+import org.lightning.serverMonitor.javalinWebapp.packets.WsPacket;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -21,11 +22,10 @@ public abstract class Platform {
 
     static {
         if (OS.toLowerCase().contains("linux")) {
-            Platform.SINGLETON = new Platform_Ubuntu();
+            Platform.SINGLETON = new Platform_Linux();
             IS_ADMIN = Platform.SINGLETON.isRunningAsAdmin();
         } else {
-            Platform.SINGLETON = new Platform_Windows();
-            IS_ADMIN = Platform.SINGLETON.isRunningAsAdmin();
+            throw new RuntimeException("Unsupported OS: " + OS);
         }
         System.out.println("Is admin: " + IS_ADMIN);
         System.out.println("OS: " + OS);
@@ -106,7 +106,7 @@ public abstract class Platform {
         return -1;
     }
 
-    public String getCPUInfo() {
+    public WsPacket getSystemInfo() {
         return null;
     }
 

@@ -26,7 +26,10 @@ function aliasedName(sensorID) {
 PacketRegistry.register("SensorAliasesPacket", (payload) => {
     sensorAliases = payload.aliases;
     console.log("sensorAliases", sensorAliases);
+    //Were not ready yet until sensorAliases are received
+    loadLocalStorage();
 });
+
 
 PacketRegistry.register("ServerInfoPacket", (payload) => {
     // console.log(payload);
@@ -36,9 +39,22 @@ PacketRegistry.register("ServerInfoPacket", (payload) => {
     document.getElementById('app-version').innerText = payload.appVersion;
 });
 
-PacketRegistry.register("CpuInfoPacket", (payload) => {
-    document.getElementById('cpu-info').innerText = payload.cpuInfo;
+PacketRegistry.register("SystemInfo", (payload) => {
+    if (payload.cpuVendor) document.getElementById('status-cpu-vendor').innerText = payload.cpuVendor;
+    if (payload.governor) document.getElementById('status-cpu-governor').innerText = payload.governor;
+    if (payload.powerState) document.getElementById('status-cpu-power-state').innerText = payload.powerState;
+    document.getElementById('status-cpu-software-freq').innerText =
+        payload.frequencyPolicy.minSoftwareFrequencyMHZ + "MHz - " + payload.frequencyPolicy.maxSoftwareFrequencyMHZ + "MHz";
+    document.getElementById('status-cpu-hardware-freq').innerText =
+        payload.frequencyPolicy.minHardwareFrequencyMHZ + "MHz - " + payload.frequencyPolicy.maxHardwareFrequencyMHZ + "MHz";
+    document.getElementById('status-ram').innerText = payload.ramUsage;
 });
+
+
+let dropdown1 = document.getElementById('sensor-dropdown-1');
+let dropdown2 = document.getElementById('sensor-dropdown-2');
+let dropdown3 = document.getElementById('sensor-dropdown-3');
+let dropdown4 = document.getElementById('sensor-dropdown-4');
 
 
 let chart1 = setupChart(document.getElementById("sensorChart1"),
@@ -90,7 +106,7 @@ let sensorKeys;
 function updateDropdown(items, dropdownElement, chart, historyChart) {
     // 1. Use querySelector instead of .getClass()
     const dropdown = dropdownElement.querySelector('.dropdown-menu');
-    const label = dropdownElement.querySelector('.dropdown-toggle');
+
     dropdown.innerHTML = '';
 
     dropdown.innerHTML = items.map(item =>
@@ -102,23 +118,52 @@ function updateDropdown(items, dropdownElement, chart, historyChart) {
 
         item.addEventListener('click', (event) => {
             var key = event.target.getAttribute("data-sensor");
-            console.log("User selected:", key);
-            clearData(chart);
-            clearData(historyChart);
-            if (key === "None") {
-                chart._selectedSensor = undefined;
-                historyChart._selectedSensor = undefined;
-                label.innerText = "None";
-                return;
-            }
-            chart._selectedSensor = key;
-            historyChart._selectedSensor = key;
-            label.innerText = event.target.innerText;
-            updateChartLabel(chart, 1, chart._selectedSensor);
-            updateChartLabel(historyChart, 1, chart._selectedSensor);
+            selectSensor(key, dropdownElement, chart, historyChart);
+            saveLocalStorage();
         });
 
     });
+}
+
+
+function loadLocalStorage() {
+    selectSensor(localStorage.getItem('sensorSetting1'), dropdown1, chart1, historyChart1);
+    selectSensor(localStorage.getItem('sensorSetting2'), dropdown2, chart2, historyChart2);
+    selectSensor(localStorage.getItem('sensorSetting3'), dropdown3, chart3, historyChart3);
+    selectSensor(localStorage.getItem('sensorSetting4'), dropdown4, chart4, historyChart4);
+}
+
+function saveLocalStorage() {
+    //Tell the server what sensors are selected so we dont have to do it every time the page is loaded
+    var selected = ["", "", "", ""];
+    if (chart1._selectedSensor) selected[0] = chart1._selectedSensor;
+    if (chart2._selectedSensor) selected[1] = chart2._selectedSensor;
+    if (chart3._selectedSensor) selected[2] = chart3._selectedSensor;
+    if (chart4._selectedSensor) selected[3] = chart4._selectedSensor;
+    localStorage.setItem('sensorSetting1', selected[0]);
+    localStorage.setItem('sensorSetting2', selected[1]);
+    localStorage.setItem('sensorSetting3', selected[2]);
+    localStorage.setItem('sensorSetting4', selected[3]);
+}
+
+function selectSensor(key, dropdownElement, chart, historyChart) {
+    const label = dropdownElement.querySelector('.dropdown-toggle');
+
+    clearData(chart);
+    clearData(historyChart);
+
+    if (key === "None" || key === undefined || key === null || key === "") {
+        console.log("Sensor Cleared");
+        chart._selectedSensor = undefined;
+        historyChart._selectedSensor = undefined;
+        label.innerText = "None";
+    } else {
+        console.log("Sensor selected:", key);
+        label.innerText = aliasedName(key);
+        chart._selectedSensor = key;
+        historyChart._selectedSensor = key;
+        updateChartLabel(chart, aliasedName(chart._selectedSensor));
+    }
 }
 
 //History seleciton
@@ -175,7 +220,7 @@ function requestHistory() {
         // Start date is 24 hours prior
         startDate = new Date(endDate.getTime() - (24 * 60 * 60 * 1000));
     } else {
-        console.log("Loading history for "+targetDate.toLocaleDateString());
+        console.log("Loading history for " + targetDate.toLocaleDateString());
         // End date is 11:59:59.999 PM of the selected day (Local)
         endDate = new Date(targetDate);
         endDate.setHours(23, 59, 59, 999);
@@ -234,10 +279,10 @@ PacketRegistry.register("SensorDumpPacket", (payload) => {
     if (JSON.stringify(newSensorKeys) !== JSON.stringify(sensorKeys)) {
         console.log(newSensorKeys);
         sensorKeys = newSensorKeys;
-        updateDropdown(sensorKeys, document.getElementById('sensor-dropdown-1'), chart1, historyChart1);
-        updateDropdown(sensorKeys, document.getElementById('sensor-dropdown-2'), chart2, historyChart2);
-        updateDropdown(sensorKeys, document.getElementById('sensor-dropdown-3'), chart3, historyChart3);
-        updateDropdown(sensorKeys, document.getElementById('sensor-dropdown-4'), chart4, historyChart4);
+        updateDropdown(sensorKeys, dropdown1, chart1, historyChart1);
+        updateDropdown(sensorKeys, dropdown2, chart2, historyChart2);
+        updateDropdown(sensorKeys, dropdown3, chart3, historyChart3);
+        updateDropdown(sensorKeys, dropdown4, chart4, historyChart4);
     }
     updateLiveChart(chart1, timestamp, sensors);
     updateLiveChart(chart2, timestamp, sensors);
@@ -278,7 +323,7 @@ function updateHistoryChart(chartElement, payload) {
         timestamps.push(new Date(entry.t));
         values.push(entry.v);
     });
-    updateChartLabel(chartElement, 1, aliasedName(sensor));
+    updateChartLabel(chartElement, aliasedName(sensor));
     updateDataBatch(chartElement, timestamps, values);
     if (payload.finalPacket) {
         historyProgress.style.display = "none";

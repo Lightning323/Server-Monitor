@@ -2,14 +2,13 @@ package org.lightning.serverMonitor.platform;
 
 public class FrequencyPolicy {
     public final double minHardwareFrequencyMHZ, maxHardwareFrequencyMHZ, minSoftwareFrequencyMHZ, maxSoftwareFrequencyMHZ;
-    public final String rawCommandOutput;
 
-    public FrequencyPolicy(double highestMinSoftwareMhz, double highestMaxSoftwareMhz, double highestMinHardwareMhz, double highestMaxHardwareMhz, String rawData) {
+
+    public FrequencyPolicy(double highestMinSoftwareMhz, double highestMaxSoftwareMhz, double highestMinHardwareMhz, double highestMaxHardwareMhz) {
         this.maxHardwareFrequencyMHZ = highestMaxHardwareMhz;
         this.minHardwareFrequencyMHZ = highestMinHardwareMhz;
         this.maxSoftwareFrequencyMHZ = highestMaxSoftwareMhz;
         this.minSoftwareFrequencyMHZ = highestMinSoftwareMhz;
-        this.rawCommandOutput = rawData;
     }
 
     public String toString() {

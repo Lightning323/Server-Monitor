@@ -3,10 +3,11 @@ package org.lightning.serverMonitor.platform;
 import com.sun.management.OperatingSystemMXBean;
 import org.lightning.serverMonitor.Main;
 import org.lightning.serverMonitor.CustomCommand;
+import org.lightning.serverMonitor.javalinWebapp.packets.SystemInfo;
+import org.lightning.serverMonitor.javalinWebapp.packets.WsPacket;
 import org.lightning.serverMonitor.utils.MiscUtils;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
@@ -21,10 +22,10 @@ import java.util.regex.Pattern;
 
 import static org.lightning.serverMonitor.Main.LOGGER;
 
-class Platform_Ubuntu extends Platform {
+class Platform_Linux extends Platform {
 
 
-    public Platform_Ubuntu() {
+    public Platform_Linux() {
         super();
     }
 
@@ -165,7 +166,7 @@ class Platform_Ubuntu extends Platform {
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
             }
-            if (!Main.TEST_MODE) {
+            if (!Main.DEV_ENV) {
                 try {
                     ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", "systemctl suspend");
                     Process process = processBuilder.start();
@@ -235,10 +236,8 @@ class Platform_Ubuntu extends Platform {
                             out.append("\nUsed memory: ").append(MiscUtils.bytesToGB(used)).append(" GB");
                         }
                     }
-
                 }
-
-                return out.toString();
+                return out.toString().trim();
             } finally {
                 process.waitFor();
             }
@@ -253,27 +252,22 @@ class Platform_Ubuntu extends Platform {
         return new String[]{"bash", "-c", "sudo cpupower frequency-set -d " + minFrequencyMHZ + "MHz -u " + maxFrequencyMHZ + "MHz"};
     }
 
-    public String getCPUInfo() {
-        String out = "";
-        out += "CPU Vendor: " + CPU_VENDOR + "\n";
+    public WsPacket getSystemInfo() {
+        SystemInfo packet = new SystemInfo();
+        packet.cpuVendor = CPU_VENDOR;
         if (CPU_VENDOR.equals(CPU_VENDOR_INTEL)) {
-            String governor = "Unknown";
-            String maxPower = "Unknown";
-
             try {
                 // Read the contents of the files and trim any trailing newlines
-                governor = Files.readString(Paths.get("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")).trim();
-                maxPower = Files.readString(Paths.get("/sys/devices/system/cpu/intel_pstate/max_perf_pct")).trim();
+                packet.governor = Files.readString(Paths.get("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")).trim();
+                packet.powerState = Files.readString(Paths.get("/sys/devices/system/cpu/intel_pstate/max_perf_pct")).trim();
             } catch (IOException e) {
                 // Handle exception (e.g., file not found, permission denied)
                 System.err.println("Failed to read CPU stats: " + e.getMessage());
             }
-            out += "Governor: " + governor + " | Max Power: " + maxPower + "%\n";
         }
-        FrequencyPolicy policy = getFrequencyPolicy();
-        out += "Hardware Frequency: " + policy.minHardwareFrequencyMHZ + "MHz - " + policy.maxHardwareFrequencyMHZ + "MHz\n";
-        out += "Software Frequency: " + policy.minSoftwareFrequencyMHZ + "MHz - " + policy.maxSoftwareFrequencyMHZ + "MHz\n";
-        return out;
+        packet.frequencyPolicy = getFrequencyPolicy();
+        packet.ramUsage = getOSRamUsage();
+        return packet;
     }
 
     public String getCPUVendor() {
@@ -354,7 +348,7 @@ class Platform_Ubuntu extends Platform {
 
     public void shutdown(String reason) {
         LOGGER.info("Shutting down" + (reason == null ? "" : ": " + reason));
-        if (Main.TEST_MODE) {
+        if (Main.DEV_ENV) {
             System.exit(0);
         } else {
             //Try 3 times to shutdown
@@ -486,8 +480,7 @@ class Platform_Ubuntu extends Platform {
          */
         FrequencyPolicy frequencyPolicy = new FrequencyPolicy(
                 highestMinSoftwareMhz, highestMaxSoftwareMhz,
-                highestMinHardwareMhz, highestMaxHardwareMhz,
-                rawCommandOutput
+                highestMinHardwareMhz, highestMaxHardwareMhz
         );
         cacheFrequencyPolicy(frequencyPolicy);
         return frequencyPolicy;
