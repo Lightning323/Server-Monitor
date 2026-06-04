@@ -22,9 +22,9 @@ public class Config {
     public String DISCORD_WEBHOOK_URL = null;
     //Sensors
     public int SENSORS_UPDATE_MS = 1000;
-    //Linux LM-sensors
-    public String LINUX_CPU_TEMP_SENSOR_NAME = "k10temp-pci-00c3";
-    public String LINUX_CPU_TEMP_KEY = "Tctl";
+
+//    public String LINUX_CPU_TEMP_SENSOR_NAME = "k10temp-pci-00c3";
+//    public String LINUX_CPU_TEMP_KEY = "Tctl";
 
     public HashMap<String, String> SENSOR_ALIASES = new HashMap<>();
 

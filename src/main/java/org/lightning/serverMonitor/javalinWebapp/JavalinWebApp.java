@@ -33,7 +33,7 @@ public class JavalinWebApp {
                 File f = new File("public");
                 System.out.println(f.getAbsolutePath());
                 config.staticFiles.add(f.getAbsolutePath().toString(), Location.EXTERNAL);
-//            } else {
+//            } else { //TODO: figure out an effective way to do this in production
 //                // In production, keep using resources
 //                config.staticFiles.add("/public", Location.CLASSPATH);
 //            }
