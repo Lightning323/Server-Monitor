@@ -78,6 +78,29 @@ table [data-bs-toggle="collapse"] {
     margin: 0 5px 5px 0 !important;
 }
 
+.chart-label1 {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 100;
+    font-size: 1.2em;
+    user-select: none;
+    pointer-events: none;
+}
+
+.chart-label2 {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 100;
+    user-select: none;
+    pointer-events: none;
+}
+
+.chart-target {
+    padding-top: 30px;
+}
+
 @media (max-width: 1200px) {
     html {
         font-size: 85%; /* Reduce or increase as needed */
@@ -86,6 +109,8 @@ table [data-bs-toggle="collapse"] {
     .chart-grid {
         grid-template-columns: repeat(auto-fit, minmax(60vw, 1fr));
     }
+
+
 
     header {
         margin: 0 0 10px 0;
@@ -96,9 +121,20 @@ table [data-bs-toggle="collapse"] {
     }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 800px) {
     html {
         font-size: 85%; /* Reduce or increase as needed */
+    }
+    .chart-target {
+        padding-top: 40px;
+    }
+    .chart-label2 {
+        top: 10px;
+        left: 0px;
+    }
+    .chart-label1 {
+        left: 0px;
+        top: 30px;
     }
 
     .monitor-chart {

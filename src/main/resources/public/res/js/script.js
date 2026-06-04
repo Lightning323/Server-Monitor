@@ -32,14 +32,12 @@ PacketRegistry.register("SensorAliasesPacket", (payload) => {
 
 
 PacketRegistry.register("ServerInfoPacket", (payload) => {
-    // console.log(payload);
-    // console.log(payload.name);
-    // console.log(payload.version);
     document.getElementById('server-name').innerText = payload.serverName;
     document.getElementById('app-version').innerText = payload.appVersion;
 });
 
 PacketRegistry.register("SystemInfo", (payload) => {
+    console.log("system info: ", payload);
     if (payload.cpuVendor) document.getElementById('status-cpu-vendor').innerText = payload.cpuVendor;
     if (payload.governor) document.getElementById('status-cpu-governor').innerText = payload.governor;
     if (payload.powerState) document.getElementById('status-cpu-power-state').innerText = payload.powerState;

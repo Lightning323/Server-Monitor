@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -255,15 +256,28 @@ class Platform_Linux extends Platform {
     public WsPacket getSystemInfo() {
         SystemInfo packet = new SystemInfo();
         packet.cpuVendor = CPU_VENDOR;
-        if (CPU_VENDOR.equals(CPU_VENDOR_INTEL)) {
-            try {
-                // Read the contents of the files and trim any trailing newlines
+        try {
+            if (CPU_VENDOR.equals(CPU_VENDOR_INTEL)) {
+                // Intel specific paths
                 packet.governor = Files.readString(Paths.get("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")).trim();
                 packet.powerState = Files.readString(Paths.get("/sys/devices/system/cpu/intel_pstate/max_perf_pct")).trim();
-            } catch (IOException e) {
-                // Handle exception (e.g., file not found, permission denied)
-                System.err.println("Failed to read CPU stats: " + e.getMessage());
+            } else if (CPU_VENDOR.equalsIgnoreCase(CPU_VENDOR_AMD)) {
+                // AMD standard governor path
+                packet.governor = Files.readString(Paths.get("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")).trim();
+
+                // AMD power state: Check for amd_pstate driver or cpufreq performance levels
+                // Try reading energy_performance_preference first (common in newer kernels)
+                Path eppPath = Paths.get("/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference");
+                if (Files.exists(eppPath)) {
+                    packet.powerState = Files.readString(eppPath).trim();
+                } else {
+                    // Fallback to scaling_governor or base_frequency if necessary
+                    packet.powerState = "N/A";
+                }
             }
+        } catch (IOException e) {
+            // Handle exception (e.g., file not found, permission denied)
+            System.err.println("Failed to read CPU stats: " + e.getMessage());
         }
         packet.frequencyPolicy = getFrequencyPolicy();
         packet.ramUsage = getOSRamUsage();

@@ -40,7 +40,7 @@ function setupChart(container, {
 
 
     const chartTarget = document.createElement("div");
-    chartTarget.style.paddingTop = "30px";
+    chartTarget.classList.add("chart-target");
     wrapper.appendChild(chartTarget);
     container.appendChild(wrapper);
 
@@ -64,15 +64,15 @@ function setupChart(container, {
 
     const canvasLabel = document.createElement("span");
     canvasLabel.innerText = "";
-    canvasLabel.style.cssText = "position: absolute; top: 10px; left: 40px; z-index: 100; font-size: 1.2em; user-select: none; pointer-events: none;";
-    if (latestDataPoint) canvasLabel.style.cssText += " font-weight: bold;";
+    canvasLabel.classList.add("chart-label1");
+    if (latestDataPoint) canvasLabel.style.cssText = " font-weight: bold;";
     wrapper.appendChild(canvasLabel);
     chart._canvasLabel = canvasLabel;
     chart._labelLatestDataPoint = latestDataPoint;
 
     const canvasLabel2 = document.createElement("span");
-    canvasLabel2.innerText = "Double-Click to Reset Zoom";
-    canvasLabel2.style.cssText = "position: absolute; top: 10px; right: 10px; z-index: 100; user-select: none; pointer-events: none;";
+    canvasLabel2.innerText = "";
+    canvasLabel2.classList.add("chart-label2");
     wrapper.appendChild(canvasLabel2);
     chart._canvasLabel2 = canvasLabel2;
 
@@ -159,11 +159,7 @@ function setChartShown(chart, isVisible) {
 
 function updateChartLabel(chart, newLabel) {
     if (newLabel === undefined || newLabel === null) return;
-    if (chart._labelLatestDataPoint) {
-        chart._canvasLabel2.innerText = newLabel;
-    } else {
-        chart._canvasLabel.innerText = newLabel;
-    }
+    chart._canvasLabel2.innerText = newLabel;
     if (!isChartEmpty(chart)) chart.redraw();
 }
 
