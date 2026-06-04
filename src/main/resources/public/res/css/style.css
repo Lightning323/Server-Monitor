@@ -17,7 +17,7 @@ header {
     border-bottom: 1px solid #efefef;
 }
 
-h2 {
+h2,h3 {
     background-color: #efefef;
     padding: 5px;
 }

@@ -89,14 +89,6 @@ public class Main {
                     webApp.broadcastPacket(Platform.SINGLETON.getSystemInfo());
                     lastMetricsWrite = System.currentTimeMillis();
                 }
-//                //Process CPU temp
-//                if (Main.config.CPU_TEMP_KEY != null && Main.config.CPU_TEMP_SENSOR_NAME != null) {
-//                    SensorProperty cpuTempProp = sensorData.getSensor(Main.config.CPU_TEMP_SENSOR_NAME, Main.config.CPU_TEMP_KEY);
-//                    double cpuTemp = -1;
-//                    if (cpuTempProp != null) cpuTemp = StringUtils.extractDouble(cpuTempProp.value);
-//                    if (sensorCallback != null) sensorCallback.accept(sensorData);
-//                    cpuTimeOverTemp.accumulate(cpuTemp, Main.config.SENSORS_UPDATE_MS);
-//                }
             } catch (Throwable e) {
                 Main.LOGGER.error("Error with CPU temp monitor", e);
             }
