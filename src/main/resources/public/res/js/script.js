@@ -9,8 +9,6 @@ import {
     setChartShown
 } from './chart.js';
 
-console.log("SCRIPT LOADED");
-
 // --- Registering your specific packets ---
 PacketRegistry.register("SENSOR_UPDATE", (payload) => {
     $('.status-temp').text(Math.round(payload.temperature) + "°C");
@@ -54,22 +52,22 @@ let dropdown2 = document.getElementById('sensor-dropdown-2');
 let dropdown3 = document.getElementById('sensor-dropdown-3');
 let dropdown4 = document.getElementById('sensor-dropdown-4');
 
-
+const lastNSamples = 250;
 let chart1 = setupChart(document.getElementById("sensorChart1"),
     {
-        color: "blue", maxPoints: 200, latestDataPoint: true
+        color: "blue", maxPoints: lastNSamples, latestDataPoint: true
     });
 let chart2 = setupChart(document.getElementById("sensorChart2"),
     {
-        color: "red", maxPoints: 200, latestDataPoint: true
+        color: "red", maxPoints: lastNSamples, latestDataPoint: true
     });
 let chart3 = setupChart(document.getElementById("sensorChart3"),
     {
-        color: "green", maxPoints: 200, latestDataPoint: true
+        color: "green", maxPoints: lastNSamples, latestDataPoint: true
     });
 let chart4 = setupChart(document.getElementById("sensorChart4"),
     {
-        color: "purple", maxPoints: 200, latestDataPoint: true
+        color: "purple", maxPoints: lastNSamples, latestDataPoint: true
     });
 
 setChartShown(chart1, false);
@@ -102,24 +100,18 @@ setChartShown(historyChart4, false);
 let sensorKeys;
 
 function updateDropdown(items, dropdownElement, chart, historyChart) {
-    // 1. Use querySelector instead of .getClass()
     const dropdown = dropdownElement.querySelector('.dropdown-menu');
-
     dropdown.innerHTML = '';
-
     dropdown.innerHTML = items.map(item =>
         `<li><a class="dropdown-item" href="#" data-sensor="${item}">${aliasedName(item)}</a></li>`)
         .join('');
     dropdown.innerHTML += `<li><a class="dropdown-item" href="#">None</a></li>`;
-
     dropdown.querySelectorAll('.dropdown-item').forEach(item => {
-
         item.addEventListener('click', (event) => {
             var key = event.target.getAttribute("data-sensor");
             selectSensor(key, dropdownElement, chart, historyChart);
             saveLocalStorage();
         });
-
     });
 }
 
@@ -164,7 +156,6 @@ function selectSensor(key, dropdownElement, chart, historyChart) {
     }
 }
 
-//History seleciton
 const dateSelector = document.getElementById("dateInput");
 const today = new Date();
 const year = today.getFullYear();
@@ -269,29 +260,34 @@ function sendHistoryRequest(historyChart, startDate, endDate, selectedSensors) {
 
 PacketRegistry.register("SensorDumpPacket", (payload) => {
     // console.log(payload);
-    let timestamp = new Date(payload.dump.timestamp);
-    let sensors = payload.dump.sensors;
-
-    let newSensorKeys = Object.keys(sensors);
-    newSensorKeys.sort();
-    if (JSON.stringify(newSensorKeys) !== JSON.stringify(sensorKeys)) {
-        console.log(newSensorKeys);
-        sensorKeys = newSensorKeys;
-        updateDropdown(sensorKeys, dropdown1, chart1, historyChart1);
-        updateDropdown(sensorKeys, dropdown2, chart2, historyChart2);
-        updateDropdown(sensorKeys, dropdown3, chart3, historyChart3);
-        updateDropdown(sensorKeys, dropdown4, chart4, historyChart4);
+    if (payload.dumps.length > 0) {
+        let newSensorKeys = Object.keys(payload.dumps[0].sensors);
+        newSensorKeys.sort();
+        if (JSON.stringify(newSensorKeys) !== JSON.stringify(sensorKeys)) {
+            console.log("Sensor keys: ",newSensorKeys);
+            sensorKeys = newSensorKeys;
+            updateDropdown(sensorKeys, dropdown1, chart1, historyChart1);
+            updateDropdown(sensorKeys, dropdown2, chart2, historyChart2);
+            updateDropdown(sensorKeys, dropdown3, chart3, historyChart3);
+            updateDropdown(sensorKeys, dropdown4, chart4, historyChart4);
+        }
+        updateLiveChart(chart1, payload.dumps);
+        updateLiveChart(chart2, payload.dumps);
+        updateLiveChart(chart3, payload.dumps);
+        updateLiveChart(chart4, payload.dumps);
     }
-    updateLiveChart(chart1, timestamp, sensors);
-    updateLiveChart(chart2, timestamp, sensors);
-    updateLiveChart(chart3, timestamp, sensors);
-    updateLiveChart(chart4, timestamp, sensors);
 });
 
-function updateLiveChart(chart, timestamp, sensors) {
+function updateLiveChart(chart, dumps) {
     setChartShown(chart, !isChartEmpty(chart));
     if (chart._selectedSensor) {
-        updateData(chart, timestamp, sensors[chart._selectedSensor]);
+        var timestamps = []
+        var values = []
+        dumps.forEach((dump) => {
+            timestamps.push(new Date(dump.timestamp));
+            values.push(dump.sensors[chart._selectedSensor]);
+        });
+        updateDataBatch(chart, timestamps, values);
     }
 }
 

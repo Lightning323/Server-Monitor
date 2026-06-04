@@ -25,10 +25,12 @@ public class Config {
     public String DISCORD_WEBHOOK_URL = null;
     //Sensors
     public int SENSORS_UPDATE_MS = 1000;
+    public long METRICS_UPDATE_MS = 1 * 60 * 1000;
 
-    //    public String LINUX_CPU_TEMP_SENSOR_NAME = "k10temp-pci-00c3";
-//    public String LINUX_CPU_TEMP_KEY = "Tctl";
+    public String CPU_TEMP_SENSOR_NAME = null;
+    public String CPU_TEMP_KEY = null;
     public HashMap<String, String> SENSOR_ALIASES = new HashMap<>();
+    public long DATABASE_RECORD_WRITE_INTERVAL_MS = 5 * 60 * 1000;
 
     //========================================================================================================================
     //========================================================================================================================

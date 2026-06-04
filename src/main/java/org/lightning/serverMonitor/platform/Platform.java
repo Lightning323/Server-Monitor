@@ -1,6 +1,4 @@
 package org.lightning.serverMonitor.platform;
-
-import org.lightning.serverMonitor.CustomCommand;
 import org.lightning.serverMonitor.Main;
 import org.lightning.serverMonitor.javalinWebapp.packets.WsPacket;
 
@@ -59,23 +57,6 @@ public abstract class Platform {
     public void shutdown(String reason) {
     }
 
-    public int runAppCustomCommand(CustomCommand command, Consumer<String> str) {
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder(command.command);
-            //Get output from error and output
-            Process process = processBuilder.redirectErrorStream(true).start();
-            BufferedReader b = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = b.readLine()) != null) {
-                str.accept(line);
-            }
-            return process.waitFor();
-        } catch (Exception e) {
-            str.accept("Error executing command: " + e.getMessage());
-            Main.LOGGER.warn("Custom command failed: ```" + e.getMessage() + "```");
-        }
-        return -1;
-    }
 
     public abstract boolean isRunningAsAdmin();
 

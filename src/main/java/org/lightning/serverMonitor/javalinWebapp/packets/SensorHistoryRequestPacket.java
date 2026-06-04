@@ -1,7 +1,7 @@
 package org.lightning.serverMonitor.javalinWebapp.packets;
 
 import org.lightning.serverMonitor.javalinWebapp.PacketContext;
-import org.lightning.serverMonitor.monitor.SensorDatabase;
+import org.lightning.serverMonitor.sensorMonitoring.SensorDatabase;
 
 import java.util.List;
 

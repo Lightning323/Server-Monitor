@@ -2,7 +2,6 @@ package org.lightning.serverMonitor.platform;
 
 import com.sun.management.OperatingSystemMXBean;
 import org.lightning.serverMonitor.Main;
-import org.lightning.serverMonitor.CustomCommand;
 import org.lightning.serverMonitor.javalinWebapp.packets.SystemInfo;
 import org.lightning.serverMonitor.javalinWebapp.packets.WsPacket;
 import org.lightning.serverMonitor.utils.MiscUtils;
@@ -331,35 +330,6 @@ class Platform_Linux extends Platform {
         }
     }
 
-    public int runAppCustomCommand(CustomCommand command, Consumer<String> str) {
-        try {
-//            System.out.println("Executing command: " + command.command);
-            ProcessBuilder pb = new ProcessBuilder("bash", "-c", command.command);
-            // Redirect error stream to standard output (optional, but good for debugging)
-            pb.redirectErrorStream(true);
-
-            // Start the process
-            Process process = pb.start();
-            System.out.println("Process started with PID: " + process.pid());
-
-            // Read the output from the process's input stream
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
-                str.accept(line);
-            }
-
-            // Wait for the process to complete and get its exit code
-            return process.waitFor();
-        } catch (Exception e) {
-            str.accept("Error executing command: " + e.getMessage());
-            LOGGER.info("Custom command failed: ```" + e.getMessage() + "```");
-        }
-        return -1;
-    }
-
     public void shutdown(String reason) {
         LOGGER.info("Shutting down" + (reason == null ? "" : ": " + reason));
         if (Main.DEV_ENV) {
@@ -486,9 +456,6 @@ class Platform_Linux extends Platform {
                 }
             }
         }
-
-        System.out.println("maximum hardware frequency: " + highestMaxHardwareMhz + " MHz;\tmaximum software frequency: " + highestMaxSoftwareMhz + " MHz");
-
         /**
          * We still keep the raw output for checking to make sure it's correct
          */

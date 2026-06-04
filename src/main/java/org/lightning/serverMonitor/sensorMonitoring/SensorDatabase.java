@@ -1,10 +1,5 @@
-package org.lightning.serverMonitor.monitor;
+package org.lightning.serverMonitor.sensorMonitoring;
 
-import org.lightning.serverMonitor.sensorMonitoring.SensorDump;
-import org.lightning.serverMonitor.sensorMonitoring.SensorDevice;
-import org.lightning.serverMonitor.sensorMonitoring.SensorProperty;
-
-import java.io.File;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -17,8 +12,9 @@ import java.util.*;
 
 public class SensorDatabase {
     private static final Path DB_FILE = Path.of("data/sensors.db");
-    private static final String URL = "jdbc:sqlite:"+DB_FILE.toString();
-    static{
+    private static final String URL = "jdbc:sqlite:" + DB_FILE.toString();
+
+    static {
         DB_FILE.toFile().getParentFile().mkdirs();
     }
 
@@ -116,9 +112,9 @@ public class SensorDatabase {
     /**
      * Retrieves sensor values for a specific column between two timestamps.
      *
-     * @param column  The name of the sensor column (e.g., "amdgpu_pci_0400_edge")
-     * @param startTs Starting t
-     * @param endTs   Ending t
+     * @param column         The name of the sensor column (e.g., "amdgpu_pci_0400_edge")
+     * @param startTs        Starting t
+     * @param endTs          Ending t
      * @param intervalMillis Interval between samples in milliseconds
      * @return Array of strings containing the sensor values
      */
@@ -127,12 +123,12 @@ public class SensorDatabase {
 
         // We group by the calculated bucket to get exactly one sample per interval
         String sql = """
-        SELECT (timestamp / ?) * ? AS bucket_ts, %s 
-        FROM sensor_logs 
-        WHERE timestamp >= ? AND timestamp <= ? 
-        GROUP BY bucket_ts 
-        ORDER BY bucket_ts ASC
-        """.formatted(safeColumn);
+                SELECT (timestamp / ?) * ? AS bucket_ts, %s 
+                FROM sensor_logs 
+                WHERE timestamp >= ? AND timestamp <= ? 
+                GROUP BY bucket_ts 
+                ORDER BY bucket_ts ASC
+                """.formatted(safeColumn);
 
         List<HistoryEntry> results = new ArrayList<>();
 

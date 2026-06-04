@@ -1,6 +1,6 @@
 package org.lightning.serverMonitor.javalinWebapp.packets;
 
-import org.lightning.serverMonitor.monitor.SensorDatabase;
+import org.lightning.serverMonitor.sensorMonitoring.SensorDatabase;
 
 public class SensorHistoryPacket implements WsPacket {
     public SensorDatabase.HistoryEntry[] history;
