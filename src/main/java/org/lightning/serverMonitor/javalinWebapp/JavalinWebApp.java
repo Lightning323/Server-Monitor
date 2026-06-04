@@ -28,15 +28,15 @@ public class JavalinWebApp {
     public JavalinWebApp() {
         app = Javalin.create(config -> {
             config.jsonMapper(new JavalinGson());
-            if (System.getProperty("env", "dev").equals("dev")) {
+//            if (System.getProperty("env", "dev").equals("dev")) {
                 // During development, point to the disk, NOT the JAR
                 File f = new File("public");
                 System.out.println(f.getAbsolutePath());
                 config.staticFiles.add(f.getAbsolutePath().toString(), Location.EXTERNAL);
-            } else {
-                // In production, keep using resources
-                config.staticFiles.add("/public", Location.CLASSPATH);
-            }
+//            } else {
+//                // In production, keep using resources
+//                config.staticFiles.add("/public", Location.CLASSPATH);
+//            }
         });
         app.ws("/ws", ws -> {
             ws.onConnect(this::onConnect);
