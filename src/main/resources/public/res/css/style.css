@@ -3,6 +3,10 @@
     height: 270px;
 }
 
+body, html{
+    overflow-x: hidden;
+}
+
 header {
     background-color: #efefef;
     color: black;
@@ -87,6 +91,7 @@ table [data-bs-toggle="collapse"] {
     user-select: none;
     pointer-events: none;
     white-space: nowrap;
+    text-shadow: 0px 0px 4px white;
 }
 
 .chart-label2 {
@@ -97,6 +102,7 @@ table [data-bs-toggle="collapse"] {
     user-select: none;
     pointer-events: none;
     white-space: nowrap;
+
 }
 
 .chart-target {
