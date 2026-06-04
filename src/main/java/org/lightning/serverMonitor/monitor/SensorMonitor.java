@@ -35,7 +35,7 @@ public class SensorMonitor {
 
                 //Write to log
                 if (history.size() > DATABASE_RECORD_WRITE_INTERVAL) {
-                    SensorDatabaseWriter.saveMultipleDumps(history);
+                    SensorDatabase.saveMultipleDumps(history);
                     history.clear();
                 }
 

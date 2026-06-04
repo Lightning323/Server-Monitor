@@ -7,10 +7,15 @@ const ro = new ResizeObserver(entries => {
         const newWidth = entry.contentRect.width;
 
         if (chart && newWidth > 0) {
+            var height = chart._height;
+            //Responsive height
+            if (window.innerWidth < 900 && height > 100) {
+                height *= 0.5;
+            }
             // console.log("Resizing chart");
             chart.setSize({
                 width: newWidth,
-                height: chart._height // Keep height constant
+                height: height // Keep height constant
             });
         }
     }

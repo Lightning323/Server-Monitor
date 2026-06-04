@@ -4,6 +4,8 @@ import org.lightning.serverMonitor.sensorMonitoring.SensorDump;
 import org.lightning.serverMonitor.sensorMonitoring.SensorDevice;
 import org.lightning.serverMonitor.sensorMonitoring.SensorProperty;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -13,8 +15,12 @@ import java.util.List;
 import java.sql.*;
 import java.util.*;
 
-public class SensorDatabaseWriter {
-    private static final String URL = "jdbc:sqlite:sensors.db";
+public class SensorDatabase {
+    private static final Path DB_FILE = Path.of("data/sensors.db");
+    private static final String URL = "jdbc:sqlite:"+DB_FILE.toString();
+    static{
+        DB_FILE.toFile().getParentFile().mkdirs();
+    }
 
     public static void saveMultipleDumps(List<SensorDump> dumpList) {
         if (dumpList.isEmpty()) return;

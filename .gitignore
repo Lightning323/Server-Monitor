@@ -17,3 +17,4 @@ history
 sensors.db
 config.json
 /out
+/data

@@ -11,8 +11,9 @@ import org.lightning.serverMonitor.utils.MiscUtils;
 
 
 public class Main {
-    public static final String APP_VERSION = "1.0.0";
-    public static final boolean DEV_ENV = System.getProperty("env", "dev").equals("dev");
+    public static final String APP_VERSION = "2.0.0";
+    //Add -Denv=dev VM option in run configuration
+    public static final boolean DEV_ENV = System.getProperty("env") != null && System.getProperty("env").equals("dev");
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,6 +28,7 @@ public class Main {
 
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
+//        System.out.println("System property 'env' is: " + System.getProperty("env"));
         System.out.println("Version: " + APP_VERSION + "; Dev environment: " + DEV_ENV);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             LOGGER.notification("shutting down; Runtime: " + MiscUtils.convertMsToHMS(System.currentTimeMillis() - startTime));
