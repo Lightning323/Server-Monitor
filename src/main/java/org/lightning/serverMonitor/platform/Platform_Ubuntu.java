@@ -358,7 +358,7 @@ class Platform_Ubuntu extends Platform {
 
     public int runAppCustomCommand(CustomCommand command, Consumer<String> str) {
         try {
-            System.out.println("Executing command: " + command.command);
+//            System.out.println("Executing command: " + command.command);
             ProcessBuilder pb = new ProcessBuilder("bash", "-c", command.command);
             // Redirect error stream to standard output (optional, but good for debugging)
             pb.redirectErrorStream(true);
@@ -433,7 +433,7 @@ class Platform_Ubuntu extends Platform {
          */
         String rawCommandOutput = null;
         ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", "cpupower -c all frequency-info");
-        System.out.println(processBuilder.command());
+//        System.out.println(processBuilder.command());
         try {
             Process process = processBuilder.start();
             StringBuilder output = new StringBuilder();
