@@ -119,6 +119,10 @@ function updateData(chart, dateMS, valueStr) {
 function updateDataBatch(chart, timestamps, values) {
     let [ts, vals] = chart.data;
 
+    if (chart._canvasLabel && chart._labelLatestDataPoint) {
+        chart._canvasLabel.innerText = values[values.length - 1];
+    }
+
     timestamps = timestamps.map(date => parseFloat(date.getTime() / 1000));
     values = values.map(value => toNumber(value));
     ts.push(...timestamps);
@@ -128,10 +132,6 @@ function updateDataBatch(chart, timestamps, values) {
         const diff = ts.length - chart.maxPoints;
         ts.splice(0, diff);
         vals.splice(0, diff);
-    }
-
-    if (chart._canvasLabel && chart._labelLatestDataPoint) {
-        chart._canvasLabel.innerText = values[values.length - 1];
     }
 
     chart.setData([ts, vals]);
