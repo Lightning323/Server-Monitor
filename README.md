@@ -1,4 +1,5 @@
-# Server-Monitor 🌡️
+![icon-192.png](src/main/resources/public/res/icon-192.png)
+# Server-Monitor
 
 > A lightweight, robust Java web application designed to monitor system temperatures on Linux servers and dispatch real-time alerts.
 
