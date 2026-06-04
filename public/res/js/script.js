@@ -19,7 +19,7 @@ PacketRegistry.register("SENSOR_UPDATE", (payload) => {
 
 let sensorAliases = {};
 
-function aliasedName(sensorID){
+function aliasedName(sensorID) {
     return sensorAliases[sensorID] || sensorID;
 }
 
@@ -141,7 +141,18 @@ historyReloadButton.addEventListener('click', () => {
     requestHistory();
 });
 
+document.getElementById("history-tab").addEventListener('click', () => {
+    if (isChartEmpty(historyChart1) && isChartEmpty(historyChart2) && isChartEmpty(historyChart3) && isChartEmpty(historyChart4)) {
+        requestHistory();
+    }
+});
+
 function requestHistory() {
+    setChartShown(historyChart1, !isChartEmpty(historyChart1));
+    setChartShown(historyChart2, !isChartEmpty(historyChart2));
+    setChartShown(historyChart3, !isChartEmpty(historyChart3));
+    setChartShown(historyChart4, !isChartEmpty(historyChart4));
+
     // 1. Get the raw date from the input
     const rawDate = new Date(dateSelector.value); // e.g., 2026-06-03
     const startDate = new Date(Date.UTC(
