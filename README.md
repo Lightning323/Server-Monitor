@@ -5,12 +5,12 @@
 
 ---
 
-## 🚀 Overview
+## Overview
 **Server-Monitor** provides peace of mind by keeping a close eye on your server's thermal health. Built specifically for Linux environments, it bridges the gap between hardware sensors and a user-friendly web interface. If your server starts running hot, you’ll be the first to know.
 
 ---
 
-## 🛠 Prerequisites
+## Prerequisites
 
 Before installing, ensure your system meets these requirements:
 
@@ -20,7 +20,7 @@ Before installing, ensure your system meets these requirements:
 
 ---
 
-## 📥 Installation
+## Installation
 Note that this guide is for Ubuntu/Debian. Other Linux distributions may require different commands.
 
 ### 1. Install & Configure lm-sensors
