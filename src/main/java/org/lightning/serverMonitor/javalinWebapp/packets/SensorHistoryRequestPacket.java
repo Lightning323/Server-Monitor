@@ -23,5 +23,7 @@ public record SensorHistoryRequestPacket
                 ctx.send(new SensorHistoryPacket(sensor, i, chunk.toArray(new SensorDatabase.HistoryEntry[0]), isLast));
             }
         }
+        //When we are done, tell the client the time over temp
+        ctx.send(new TimeOverTempPacket(sensor, data));
     }
 }

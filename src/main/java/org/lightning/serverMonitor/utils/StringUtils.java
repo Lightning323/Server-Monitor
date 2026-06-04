@@ -11,7 +11,7 @@ public class StringUtils {
      * Extracts a double from a string containing mixed units/symbols.
      * Returns -1.0 if no valid number is found.
      */
-    public static double extractDouble(String value) {
+    public static double stringToNumber(String value) {
         if (value == null || value.isEmpty()) {
             return -1.0;
         }

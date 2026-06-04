@@ -42,11 +42,17 @@ header img {
 h2 {
     font-size: 1.4em;
 }
+h3 {
+    font-size: 1.2em;
+}
 
 h2, h3 {
     background-color: var(--secondary-color);
     padding: 10px;
     border-radius: 5px;
+}
+h3{
+    background-color: var(--trinary-color);
 }
 
 
@@ -146,7 +152,6 @@ table [data-bs-toggle="collapse"] tr td {
     }
 
     h2,h3 {
-        font-size: 1em;
         padding: 8px;
         border-radius: 0;
     }

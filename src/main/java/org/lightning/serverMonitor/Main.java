@@ -114,7 +114,7 @@ public class Main {
             lastTempNotification = System.currentTimeMillis();
             sensorData.forEachSensor((sensor, value) -> {
                 if (Main.config.TEMP_NOTIFICATIONS.containsKey(sensor)) {
-                    double numVal = StringUtils.extractDouble(value);
+                    double numVal = StringUtils.stringToNumber(value);
                     if (numVal > Main.config.TEMP_NOTIFICATIONS.get(sensor)) {
                         String sensorAlias = config.SENSOR_ALIASES.getOrDefault(sensor, sensor);
                         LOGGER.notification(sensorAlias + " is above " + Main.config.TEMP_NOTIFICATIONS.get(sensor) + " (" + value + ")");

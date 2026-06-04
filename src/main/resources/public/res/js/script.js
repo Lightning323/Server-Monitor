@@ -180,6 +180,7 @@ function requestHistory() {
     setChartShown(historyChart2, !isChartEmpty(historyChart2));
     setChartShown(historyChart3, !isChartEmpty(historyChart3));
     setChartShown(historyChart4, !isChartEmpty(historyChart4));
+    timeOverTempTableBody.innerHTML = "";
 
     // 1. Get the raw date from the input
     const dateString = dateSelector.value;
@@ -258,7 +259,7 @@ PacketRegistry.register("SensorDumpPacket", (payload) => {
         let newSensorKeys = Object.keys(payload.dumps[0].sensors);
         newSensorKeys.sort();
         if (JSON.stringify(newSensorKeys) !== JSON.stringify(sensorKeys)) {
-            console.log("Sensor keys: ",newSensorKeys);
+            console.log("Sensor keys: ", newSensorKeys);
             sensorKeys = newSensorKeys;
             updateDropdown(sensorKeys, dropdown1, chart1, historyChart1);
             updateDropdown(sensorKeys, dropdown2, chart2, historyChart2);
@@ -293,6 +294,75 @@ PacketRegistry.register("SensorHistoryPacket", (payload) => {
     else if (historyChart4._selectedSensor === sensor) updateHistoryChart(historyChart3, payload);
     else updateHistoryChart(historyChart4, payload);
 });
+
+const timeOverTempTableBody = document.getElementById("timeOverTempTable");
+
+PacketRegistry.register("TimeOverTempPacket", (payload) => {
+    var sensor = payload.sensor;
+    var timeOverTemp = payload.timeMsOverTemp;
+    console.log(sensor, timeOverTemp);
+    renderSensorRow(sensor, timeOverTemp, timeOverTempTableBody);
+});
+
+function renderSensorRow(sensorName, timeOverTemp, tableBody) {
+    const row = document.createElement('tr');
+
+    // Create the Sensor Name column
+    const nameCell = document.createElement('td');
+    nameCell.textContent = aliasedName(sensorName);
+    row.appendChild(nameCell);
+
+    // Create threshold columns
+    const thresholds = [45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120];
+
+    thresholds.forEach(threshold => {
+        const cell = document.createElement('td');
+        // Logic: display value if it meets threshold, otherwise '-'
+        const time = timeOverTemp[threshold];
+        cell.textContent = formatMillisToTime(time) || '-';
+        cell.style.backgroundColor = lerpColor([255, 255, 255], [210, 200, 235], time / (60 * 60 * 1000));
+        row.appendChild(cell);
+    });
+
+    tableBody.appendChild(row);
+}
+
+/**
+ * Linearly interpolates between two colors.
+ * @param {Array} color1 - [r, g, b]
+ * @param {Array} color2 - [r, g, b]
+ * @param {number} t - Fraction (0.0 to 1.0)
+ * @returns {string} - "rgb(r, g, b)"
+ */
+function lerpColor(color1, color2, t) {
+    const r = Math.round(color1[0] + (color2[0] - color1[0]) * t);
+    const g = Math.round(color1[1] + (color2[1] - color1[1]) * t);
+    const b = Math.round(color1[2] + (color2[2] - color1[2]) * t);
+
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+/**
+ * Converts milliseconds to hh:mm:ss string format
+ * @param {number} millis - Duration in milliseconds
+ * @returns {string} Formatted time string
+ */
+function formatMillisToTime(millis) {
+    let seconds = Math.floor((millis / 1000) % 60);
+    let minutes = Math.floor((millis / (1000 * 60)) % 60);
+    let hours = Math.floor((millis / (1000 * 60 * 60)));
+    if (hours === 0.0 && minutes === 0.0 && seconds === 0.0) {
+        return "0"
+    } else if (hours === 0.0) {
+        return [minutes + "m", seconds + "s"]
+            .map(val => String(val).padStart(2, '0'))
+            .join(':');
+    } else {
+        return [hours + "h", minutes + "m", seconds + "s"]
+            .map(val => String(val).padStart(2, '0'))
+            .join(':');
+    }
+}
 
 function updateHistoryChart(chartElement, payload) {
     setChartShown(chartElement, true);
