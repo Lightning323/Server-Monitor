@@ -9,12 +9,6 @@ import {
     setChartShown
 } from './chart.js';
 
-// --- Registering your specific packets ---
-PacketRegistry.register("SENSOR_UPDATE", (payload) => {
-    $('.status-temp').text(Math.round(payload.temperature) + "°C");
-    window.updateTempChart(new Date(payload.timestamp), payload.temperature);
-});
-
 let sensorAliases = {};
 
 function aliasedName(sensorID) {

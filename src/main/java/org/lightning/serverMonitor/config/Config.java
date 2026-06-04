@@ -2,7 +2,6 @@ package org.lightning.serverMonitor.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.lightning.serverMonitor.platform.Platform;
 import org.lightning.serverMonitor.sensorMonitoring.SensorDump;
 
 import java.io.*;
@@ -10,16 +9,18 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import static org.lightning.serverMonitor.Main.LOGGER;
 
 public class Config {
     public String SERVER_NAME = "Server";
     public int WEBAPP_PORT = 3000;
-//    public String DISCORD_WEBHOOK_URL = null;
+
+    public String DISCORD_WEBHOOK_URL = "";
+    public HashMap<String, Integer> TEMP_NOTIFICATIONS = new HashMap<>();
+    public long TEMP_NOTIFICATION_MS = 30 * 1000;
+
     public int SENSORS_UPDATE_MS = 1000;
     public long METRICS_UPDATE_MS = 1 * 60 * 1000;
     public HashMap<String, String> SENSOR_ALIASES = new HashMap<>();
@@ -28,6 +29,9 @@ public class Config {
     //========================================================================================================================
     //========================================================================================================================
     //========================================================================================================================
+
+
+
     // === Internal stuff ===
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path SETTINGS_PATH = Paths.get(System.getProperty("user.dir"), "config.json");

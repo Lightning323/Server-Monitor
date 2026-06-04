@@ -9,6 +9,7 @@ import org.lightning.serverMonitor.platform.Platform;
 import org.lightning.serverMonitor.sensorMonitoring.SensorDump;
 import org.lightning.serverMonitor.utils.ExtendedLogger;
 import org.lightning.serverMonitor.utils.MiscUtils;
+import org.lightning.serverMonitor.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ public class Main {
     //Monitor
     static long lastDatabaseWrite;
     static long lastMetricsWrite;
+    static long lastTempNotification;
     private static ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private static final List<SensorDump> cachedHistory = new ArrayList<>();
     private static final List<SensorDump> lastNSamples = new ArrayList<>();
@@ -41,7 +43,7 @@ public class Main {
 
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
-//        System.out.println("System property 'env' is: " + System.getProperty("env"));
+        LOGGER.debug("System property 'env' is: " + System.getProperty("env"));
         System.out.println("Version: " + APP_VERSION + "; Dev environment: " + DEV_ENV);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             LOGGER.notification("shutting down; Runtime: " + MiscUtils.convertMsToHMS(System.currentTimeMillis() - startTime));
@@ -59,6 +61,7 @@ public class Main {
 //                sendPacket(ctx, new SensorsSelectedPacket(config.SELECTED_SENSORS));
             }
         };
+        System.out.println("Starting webapp on port " + config.WEBAPP_PORT);
         webApp.registerPacket(ServerInfoPacket.class);
         webApp.registerPacket(SensorDumpPacket.class);
         webApp.registerPacket(SystemInfo.class);
@@ -85,14 +88,40 @@ public class Main {
                     writeToDatabase();
                 }
                 //Send metrics
-                if (System.currentTimeMillis() - lastMetricsWrite > Main.config.METRICS_UPDATE_MS) {
+                if (Main.config.METRICS_UPDATE_MS > 0
+                        && System.currentTimeMillis() - lastMetricsWrite > Main.config.METRICS_UPDATE_MS) {
                     webApp.broadcastPacket(Platform.SINGLETON.getSystemInfo());
                     lastMetricsWrite = System.currentTimeMillis();
                 }
+
+                //Check temperature notifications
+                checkTempNotifications(sensorData);
+
             } catch (Throwable e) {
                 Main.LOGGER.error("Error with CPU temp monitor", e);
             }
         }, 0, Main.config.SENSORS_UPDATE_MS, TimeUnit.MILLISECONDS);
+    }
+
+    private static boolean tempNotificationsEnabled() {
+        return Main.config.TEMP_NOTIFICATIONS != null && !Main.config.TEMP_NOTIFICATIONS.isEmpty()
+                && Main.config.DISCORD_WEBHOOK_URL != null && !Main.config.DISCORD_WEBHOOK_URL.isEmpty();
+    }
+
+    private static void checkTempNotifications(SensorDump sensorData) {
+        if (tempNotificationsEnabled()
+                && System.currentTimeMillis() - lastTempNotification > Main.config.TEMP_NOTIFICATION_MS) {
+            lastTempNotification = System.currentTimeMillis();
+            sensorData.forEachSensor((sensor, value) -> {
+                if (Main.config.TEMP_NOTIFICATIONS.containsKey(sensor)) {
+                    double numVal = StringUtils.extractDouble(value);
+                    if (numVal > Main.config.TEMP_NOTIFICATIONS.get(sensor)) {
+                        String sensorAlias = config.SENSOR_ALIASES.getOrDefault(sensor, sensor);
+                        LOGGER.notification(sensorAlias + " is above " + Main.config.TEMP_NOTIFICATIONS.get(sensor) + " (" + value + ")");
+                    }
+                }
+            });
+        }
     }
 
     private static void writeToDatabase() {

@@ -1,25 +1,52 @@
+:root {
+    --theme-color: #3931c5;
+    --main-color: #3931c5;
+    --secondary-color: #e6e5ff;
+    --trinary-color: #f0f0f0;
+}
+
 .monitor-chart {
     width: 100%;
     height: 270px;
 }
 
-body, html{
+body, html {
     overflow-x: hidden;
 }
 
 header {
-    background-color: #efefef;
-    color: black;
-    padding: 10px;
+    background-color: var(--main-color);
+    color: white;
+    padding: 8px;
+    vertical-align: middle;
     text-align: center;
     margin: 0 0 30px 0;
-    font-size: 1.8em;
-    border-bottom: 1px solid #efefef;
+    font-size: 1.6em;
+    user-select: none;
 }
 
-h2,h3 {
-    background-color: #efefef;
-    padding: 5px;
+.no-drag {
+    -webkit-user-drag: none;
+    user-drag: none;
+    /* This prevents the image from being selected as well */
+    user-select: none;
+}
+
+header img {
+    draggable: false;
+    margin-right: 10px;
+    height: 30px;
+
+}
+
+h2 {
+    font-size: 1.4em;
+}
+
+h2, h3 {
+    background-color: var(--secondary-color);
+    padding: 10px;
+    border-radius: 5px;
 }
 
 
@@ -68,9 +95,10 @@ code {
     margin-bottom: 30px;
 }
 
-table [data-bs-toggle="collapse"] {
+table [data-bs-toggle="collapse"] tr td {
     cursor: pointer;
-    background-color: #f8f9fa !important;
+    /*border: 2px solid var(--secondary-color);*/
+    background-color: var(--trinary-color) !important;
 }
 
 .collapse tr td:first-child {
@@ -117,7 +145,11 @@ table [data-bs-toggle="collapse"] {
         grid-template-columns: repeat(auto-fit, minmax(60vw, 1fr));
     }
 
-
+    h2,h3 {
+        font-size: 1em;
+        padding: 8px;
+        border-radius: 0;
+    }
 
     header {
         margin: 0 0 10px 0;
@@ -132,13 +164,16 @@ table [data-bs-toggle="collapse"] {
     html {
         font-size: 85%; /* Reduce or increase as needed */
     }
+
     .chart-target {
         padding-top: 40px;
     }
+
     .chart-label2 {
         top: 10px;
         left: 0px;
     }
+
     .chart-label1 {
         left: 0px;
         top: 30px;

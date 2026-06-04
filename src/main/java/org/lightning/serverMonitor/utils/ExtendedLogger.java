@@ -15,7 +15,7 @@ public class ExtendedLogger {
     private final void notify(String severity, String message) {
         if (Main.config.DISCORD_WEBHOOK_URL != null) {
             DiscordUtils.sendWebhookMessage(Main.config.DISCORD_WEBHOOK_URL,
-                    "`" + Main.config.SERVER_NAME + " [" + severity + "]: " + message + "`");
+                    Main.config.SERVER_NAME + " [" + severity + "]: `" + message + "`");
         }
     }
 
@@ -44,6 +44,8 @@ public class ExtendedLogger {
     }
 
     public void debug(String msg) {
+        //Javalin uses slf4j and it dumps a TON of debug messages
+//        if (Main.DEV_ENV) LOGGER.info(msg);
         LOGGER.debug(msg);
     }
 

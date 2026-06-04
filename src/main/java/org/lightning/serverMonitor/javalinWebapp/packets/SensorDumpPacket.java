@@ -4,6 +4,7 @@ import org.lightning.serverMonitor.sensorMonitoring.SensorDump;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SensorDumpPacket implements WsPacket {
     public List<SensorPacketValue> dumps = new ArrayList<>();
@@ -13,6 +14,9 @@ public class SensorDumpPacket implements WsPacket {
     }
 
     public SensorDumpPacket(List<SensorDump> dump2) {
-        dump2.forEach(d -> dumps.add(new SensorPacketValue(d)));
+        List<SensorPacketValue> newDumps = dump2.stream()
+                .map(SensorPacketValue::new)
+                .toList();
+        dumps.addAll(newDumps);
     }
 }
