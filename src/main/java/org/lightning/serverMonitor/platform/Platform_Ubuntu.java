@@ -28,39 +28,6 @@ class Platform_Ubuntu extends Platform {
         super();
     }
 
-    /**
-     * System load averages over the past:
-     * <p>
-     * 1 minute (0.29)
-     * <p>
-     * 5 minutes (0.15)
-     * <p>
-     * 15 minutes (0.06)
-     *
-     * @return
-     */
-    public String getCPULoadStr() {
-        OperatingSystemMXBean osBean =
-                (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-        double processCpuLoad = osBean.getProcessCpuLoad(); // Between 0.0 and 1.0
-        String processLoad = "\nProcess CPU Load: " + Math.round(processCpuLoad * 100) + "%";
-
-        try {
-            Process process = Runtime.getRuntime().exec("uptime");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (!line.isEmpty()) {
-                    return line +
-                            "\n(load avg over the past: 1m, 5m, 15m)" +
-                            processLoad;
-                }
-            }
-        } catch (Exception ignored) {
-        }
-        return "Unknown" + processLoad;
-    }
-
     //TODO: There are 3 ways to get CPU load:
     // 1. Using top command
     // 2. Using /proc/stat

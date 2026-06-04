@@ -1,0 +1,74 @@
+.monitor-chart {
+    width: 100%;
+    height: 270px;
+}
+
+#title {
+    background-color: #efefef;
+    color: black;
+    padding: 10px;
+    text-align: center;
+    margin: 0 0 10px 0;
+}
+
+#title h1 {
+    font-size: 1.8em;
+    margin: 0px;
+}
+
+@media (max-width: 1200px) {
+    html {
+        font-size: 85%; /* Reduce or increase as needed */
+    }
+}
+
+@media (max-width: 700px) {
+    html {
+        font-size: 85%; /* Reduce or increase as needed */
+    }
+
+    .monitor-chart {
+        height: 200px;
+    }
+}
+
+.col-md-6 {
+    margin: 20px 0;
+}
+
+.col-md-12 {
+    margin: 20px 0;
+}
+
+h2 {
+    margin-bottom: 20px;
+
+}
+
+button {
+    margin: 5px 10px !important;
+}
+
+container button {
+    margin: 5px 10px !important;
+    display: inline-block;
+}
+
+input {
+    min-width: 100px;
+}
+
+.cornerButton {
+    position: absolute;
+    top: -5px;
+    right: 5px;
+    font-size: 1.2em;
+    opacity: 0.6;
+}
+.chart-grid {
+    display: grid;
+    /* This creates as many columns as fit, with a minimum width of 400px */
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 20px;
+    width: 100%;
+}
