@@ -4,12 +4,14 @@ import org.lightning.serverMonitor.monitor.SensorDatabaseWriter;
 
 public class SensorHistoryPacket implements WsPacket {
     public SensorDatabaseWriter.HistoryEntry[] history;
-    public boolean clear;
+    public int packetNumber;
     public boolean finalPacket;
+    public String sensor;
 
-    public SensorHistoryPacket( boolean clear, SensorDatabaseWriter.HistoryEntry[] hist, boolean finalPacket) {
-        history = hist;
+    public SensorHistoryPacket(String sensor, int packetNumber, SensorDatabaseWriter.HistoryEntry[] hist, boolean finalPacket) {
+        this.history = hist;
+        this.sensor = sensor;
         this.finalPacket = finalPacket;
-        this.clear = clear;
+        this.packetNumber = packetNumber;
     }
 }

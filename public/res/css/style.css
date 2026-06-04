@@ -65,3 +65,10 @@ input {
     font-size: 1.2em;
     opacity: 0.6;
 }
+.chart-grid {
+    display: grid;
+    /* This creates as many columns as fit, with a minimum width of 400px */
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 20px;
+    width: 100%;
+}
