@@ -5,6 +5,7 @@ import {
 
 let sensorAliases = {};
 let tempratureSensors = [];
+let loadedProperties = false;
 
 function aliasedName(sensorID) {
     return sensorAliases[sensorID] || sensorID;
@@ -21,6 +22,7 @@ PacketRegistry.register("SensorPropertiesPacket", (payload) => {
     });
     console.log("sensorAliases", sensorAliases);
     console.log("tempratureSensors", tempratureSensors);
+    loadedProperties=true;
     loadLocalStorage();
 });
 
@@ -242,7 +244,7 @@ function sendHistoryRequest(historyChart, startDate, endDate, selectedSensors) {
 
 PacketRegistry.register("SensorDumpPacket", (payload) => {
     // console.log(payload);
-    if (payload.dumps.length > 0) {
+    if (payload.dumps.length > 0 && loadedProperties) {
         let newSensorKeys = Object.keys(payload.dumps[0].sensors);
         newSensorKeys.sort();
         if (JSON.stringify(newSensorKeys) !== JSON.stringify(sensorKeys)) {
@@ -298,7 +300,7 @@ function renderSensorRow(sensor, timeOverTemp, tableBody) {
     row.appendChild(nameCell);
 
     // Create threshold columns
-    const thresholds = [45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120];
+    const thresholds = [40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120];
 
     thresholds.forEach(threshold => {
         const cell = document.createElement('td');
