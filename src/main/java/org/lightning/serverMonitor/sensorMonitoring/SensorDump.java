@@ -116,11 +116,21 @@ public class SensorDump {
         return keys;
     }
 
+    public SensorProperty getSensor(String sensorID) {
+        for (SensorDevice device : devices) {
+            for (SensorProperty prop : device.properties) {
+                if (getSensorID(device, prop).equals(sensorID)) {
+                    return prop;
+                }
+            }
+        }
+        return null;
+    }
+
     public SensorProperty getSensor(String sensorName, String targetKey) {
         for (SensorDevice device : devices) {
             if (device.deviceName.equals(sensorName)) {
                 for (SensorProperty prop : device.properties) {
-//                    System.out.println(prop.key + ": " + prop.v);
                     if (prop.key.equals(targetKey)) {
                         return prop;
                     }

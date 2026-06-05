@@ -59,7 +59,7 @@ public class Main {
                 super.onConnect(ctx);
                 sendPacket(ctx, new ServerInfoPacket(APP_VERSION, Main.config.SERVER_NAME));
                 sendPacket(ctx, Platform.SINGLETON.getSystemInfo());
-                sendPacket(ctx, new SensorAliasesPacket(config.SENSOR_ALIASES));
+                sendPacket(ctx, new SensorPropertiesPacket(config.SENSORS));
                 sendPacket(ctx, new SensorDumpPacket(lastNSamples));
 //                sendPacket(ctx, new SensorsSelectedPacket(config.SELECTED_SENSORS));
             }
@@ -70,7 +70,7 @@ public class Main {
         webApp.registerPacket(SystemInfo.class);
         webApp.registerPacket(SensorHistoryPacket.class);
         webApp.registerPacket(SensorHistoryRequestPacket.class);
-        webApp.registerPacket(SensorAliasesPacket.class);
+        webApp.registerPacket(SensorPropertiesPacket.class);
         webApp.start(config.WEBAPP_PORT);
 
         //Start taskbar tray
@@ -106,21 +106,17 @@ public class Main {
         }, 0, Main.config.SENSORS_UPDATE_MS, TimeUnit.MILLISECONDS);
     }
 
-    private static boolean tempNotificationsEnabled() {
-        return Main.config.TEMP_NOTIFICATIONS != null && !Main.config.TEMP_NOTIFICATIONS.isEmpty()
-                && Main.config.DISCORD_WEBHOOK_URL != null && !Main.config.DISCORD_WEBHOOK_URL.isEmpty();
-    }
 
     private static void checkTempNotifications(SensorDump sensorData) {
-        if (tempNotificationsEnabled()
+        if (Main.config.DISCORD_WEBHOOK_URL != null && !Main.config.DISCORD_WEBHOOK_URL.isEmpty()
                 && System.currentTimeMillis() - lastTempNotification > Main.config.TEMP_NOTIFICATION_MS) {
             lastTempNotification = System.currentTimeMillis();
             sensorData.forEachSensor((sensor, value) -> {
-                if (Main.config.TEMP_NOTIFICATIONS.containsKey(sensor)) {
+                Config.SensorConfigProperty sensorConfigProperty = Main.config.SENSORS.get(sensor);
+                if (sensorConfigProperty != null && sensorConfigProperty.notifyTemp()) {
                     double numVal = StringUtils.stringToNumber(value);
-                    if (numVal > Main.config.TEMP_NOTIFICATIONS.get(sensor)) {
-                        String sensorAlias = config.SENSOR_ALIASES.getOrDefault(sensor, sensor);
-                        LOGGER.notification(sensorAlias + " is above " + Main.config.TEMP_NOTIFICATIONS.get(sensor) + " (" + value + ")");
+                    if (numVal > sensorConfigProperty.notificationThreshold()) {
+                        LOGGER.notification(sensorConfigProperty.alias() + " is above " + sensorConfigProperty.notificationThreshold() + " (" + value + ")");
                     }
                 }
             });

@@ -9,9 +9,11 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Arrays;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.lightning.serverMonitor.Main.LOGGER;
 
@@ -20,13 +22,22 @@ public class Config {
     public int WEBAPP_PORT = 3000;
 
     public String DISCORD_WEBHOOK_URL = "";
-    public HashMap<String, Integer> TEMP_NOTIFICATIONS = new HashMap<>();
     public long TEMP_NOTIFICATION_MS = 30 * 1000;
-
     public int SENSORS_UPDATE_MS = 1000;
     public long METRICS_UPDATE_MS = 1 * 60 * 1000;
-    public TreeMap<String, String> SENSOR_ALIASES = new TreeMap<>();
+    public TreeMap<String, SensorConfigProperty> SENSORS = new TreeMap<>();
     public long DATABASE_RECORD_WRITE_INTERVAL_MS = 5 * 60 * 1000;
+
+    public record SensorConfigProperty(
+            String alias,
+            String unit,
+            int notificationThreshold
+    ) {
+        public boolean notifyTemp() {
+            return notificationThreshold > 0;
+        }
+    }
+
 
     //========================================================================================================================
     //========================================================================================================================
@@ -57,9 +68,20 @@ public class Config {
         LOGGER.info("No settings file found, creating default");
         Config config = new Config();
         SensorDump sensors = SensorDump.read();
-        List<String> sensorsAsSortedMap = sensors.getSortedSensorKeys();
-        sensorsAsSortedMap.forEach((sensorName) -> {
-            config.SENSOR_ALIASES.put(sensorName, sensorName);
+        final Pattern unitPattern = Pattern.compile("(?<=[^a-zA-Z])[^0-9.]+", Pattern.MULTILINE);
+        sensors.forEachSensor((sensorName, value) -> {
+            final Matcher matcher = unitPattern.matcher(value);
+            String unit = "";
+            LOGGER.debug("Sensor: " + sensorName + ", Value: " + value);
+            if (matcher.find()) unit = matcher.group(0).trim().toUpperCase();
+            String alias = sensorName
+                    .replaceAll("__(.*?)__", " ($1) ")
+                    .replace('_', ' ')
+                    .trim();
+            alias = Arrays.stream(alias.split("\\s+"))
+                    .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
+                    .collect(Collectors.joining(" "));
+            config.SENSORS.put(sensorName, new SensorConfigProperty(alias, unit, -1));
         });
         save(config); // Save defaults if no file
         return config;

@@ -4,15 +4,23 @@ import {
 } from './chart.js';
 
 let sensorAliases = {};
+let tempratureSensors = [];
 
 function aliasedName(sensorID) {
     return sensorAliases[sensorID] || sensorID;
 }
 
-PacketRegistry.register("SensorAliasesPacket", (payload) => {
-    sensorAliases = payload.aliases;
+PacketRegistry.register("SensorPropertiesPacket", (payload) => {
+    // console.log("SensorPropertiesPacket", payload);
+    Object.entries(payload.sensors).forEach(([key, sensor]) => {
+        sensorAliases[key] = sensor.alias;
+
+        if (sensor.unit && sensor.unit.toLowerCase().includes("c")) {
+            tempratureSensors.push(key);
+        }
+    });
     console.log("sensorAliases", sensorAliases);
-    //Were not ready yet until sensorAliases are received
+    console.log("tempratureSensors", tempratureSensors);
     loadLocalStorage();
 });
 
@@ -280,12 +288,13 @@ PacketRegistry.register("TimeOverTempPacket", (payload) => {
     renderSensorRow(sensor, timeOverTemp, timeOverTempTableBody);
 });
 
-function renderSensorRow(sensorName, timeOverTemp, tableBody) {
+function renderSensorRow(sensor, timeOverTemp, tableBody) {
+    if (!tempratureSensors.includes(sensor)) return;
     const row = document.createElement('tr');
 
     // Create the Sensor Name column
     const nameCell = document.createElement('td');
-    nameCell.textContent = aliasedName(sensorName);
+    nameCell.textContent = aliasedName(sensor);
     row.appendChild(nameCell);
 
     // Create threshold columns
