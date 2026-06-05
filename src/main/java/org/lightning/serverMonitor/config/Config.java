@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 import static org.lightning.serverMonitor.Main.LOGGER;
 
@@ -56,8 +57,9 @@ public class Config {
         LOGGER.info("No settings file found, creating default");
         Config config = new Config();
         SensorDump sensors = SensorDump.read();
-        sensors.forEachSensor((key, value) -> {
-            config.SENSOR_ALIASES.put(key, key);
+        TreeMap<String, String> sensorsAsSortedMap = sensors.getSensorsAsSortedMap();
+        sensorsAsSortedMap.forEach((sensorName, sensorValue) -> {
+            config.SENSOR_ALIASES.put(sensorName, sensorName);
         });
         save(config); // Save defaults if no file
         return config;

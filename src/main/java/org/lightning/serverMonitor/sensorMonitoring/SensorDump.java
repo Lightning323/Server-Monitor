@@ -5,7 +5,9 @@ import org.lightning.serverMonitor.platform.Platform;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.function.BiConsumer;
 
 public class SensorDump {
@@ -108,6 +110,13 @@ public class SensorDump {
                 sensor.accept(getSensorID(device, prop), prop.value);
             }
         }
+    }
+
+    public TreeMap<String, String> getSensorsAsSortedMap() {
+        // TreeMap keeps keys sorted alphabetically automatically
+        TreeMap<String, String> sensors = new TreeMap<>();
+        forEachSensor(sensors::put);
+        return sensors;
     }
 
     public SensorProperty getSensor(String sensorName, String targetKey) {
