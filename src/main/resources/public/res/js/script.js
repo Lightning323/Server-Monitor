@@ -298,7 +298,7 @@ function renderSensorRow(sensorName, timeOverTemp, tableBody) {
         cell.textContent = formatMillisToTime(time) || '-';
         //Color gradient from 0-2 hours
         cell.style.backgroundColor = lerpColor([255, 255, 255],
-            [105, 95, 175], Math.min(1, time / (2 * 60 * 60 * 1000)));
+            [105, 85, 175], Math.min(1, time / (2 * 60 * 60 * 1000)));
         row.appendChild(cell);
     });
 
