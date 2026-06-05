@@ -18,6 +18,27 @@ public class SensorDump {
     }
 
     public static SensorDump read() {
+        /**
+         *amdgpu-pci-0300
+         * Adapter: PCI adapter
+         * vddgfx:      571.00 mV
+         * fan1:           0 RPM  (min =    0 RPM, max = 3600 RPM)
+         * edge:         +31.0°C  (crit = +100.0°C, hyst = -273.1°C)
+         *                        (emerg = +105.0°C)
+         * junction:     +37.0°C  (crit = +110.0°C, hyst = -273.1°C)
+         *                        (emerg = +115.0°C)
+         * mem:          +42.0°C  (crit = +108.0°C, hyst = -273.1°C)
+         *                        (emerg = +113.0°C)
+         * PPT:          14.00 W  (cap = 303.00 W)
+         *
+         *
+         * How we parse lm sensors
+         * 1. The device is always the first line
+         * 2. once we have the device
+         *  1. Get adapter by finding "Adapter:"
+         *  2. Get properties by finding a colon and splitting it into "<property>:<value>"
+         * 3. A blank line always means we've finished processing the current device
+         */
         List<SensorDevice> devices = new ArrayList<>();
         try {
             Process process = new ProcessBuilder("sensors").start();
@@ -26,31 +47,38 @@ public class SensorDump {
                 SensorDevice currentDevice = null;
 
                 while ((line = reader.readLine()) != null) {
-                    line = line.trim();
-                    if (line.isEmpty()) continue;
+                    if (line.isBlank()) {
+                        //If we reach an empty line, we've finished processing the current device
+                        currentDevice = null;
+                        continue;
+                    }
 
-                    // Identify a new device block (does not contain ":")
-                    if (!line.contains(":")) {
+                    if (currentDevice == null) { //The device is always the first line
                         currentDevice = new SensorDevice();
-                        currentDevice.deviceName = line;
+                        currentDevice.deviceName = line.replace(":", "").trim();
                         devices.add(currentDevice);
-                    }
-                    // Identify adapter
-                    else if (line.startsWith("Adapter:")) {
-                        if (currentDevice != null) currentDevice.adapter = line.substring(8).trim();
-                    }
-                    // Identify properties (key: v)
-                    else if (currentDevice != null) {
-                        String[] parts = line.split(":", 2);
-                        String key = parts[0].trim();
-                        String value = parts[1].trim();
+                    } else {
+                        String trimmed = line.trim();
 
-                        // Filter out extra text like (min = ..., max = ...) if desired
-                        if (value.contains("(")) {
-                            value = value.substring(0, value.indexOf("(")).trim();
+                        if (trimmed.startsWith("Adapter:")) {
+                            currentDevice.adapter = trimmed.substring(8).trim();
                         }
+                        // 3. Handle Property lines (Key: Value)
+                        else if (trimmed.contains(":")) {
+                            String[] parts = trimmed.split(":", 2);
+                            String key = parts[0].trim();
+                            String value = parts[1].trim();
 
-                        currentDevice.properties.add(new SensorProperty(key, value));
+                            // Only add if it's not a secondary detail/threshold line
+                            // Filter out lines that are just continuations of thresholds
+                            if (!key.equalsIgnoreCase("Adapter") && !value.isEmpty()) {
+                                // Strip out noise in parentheses
+                                if (value.contains("(")) {
+                                    value = value.substring(0, value.indexOf("(")).trim();
+                                }
+                                currentDevice.properties.add(new SensorProperty(key, value));
+                            }
+                        }
                     }
                 }
             }
@@ -98,9 +126,13 @@ public class SensorDump {
 
     @Override
     public String toString() {
+        StringBuilder devices2 = new StringBuilder();
+        devices.forEach(device -> {
+            devices2.append("\n" + device.toString());
+        });
         return "SensorData{" +
-                "devices=" + devices +
-                ", t=" + timestamp +
+                "devices=" + devices2 +
+                "\n, t=" + timestamp +
                 '}';
     }
 }

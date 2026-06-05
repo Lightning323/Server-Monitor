@@ -50,6 +50,8 @@ public class Main {
             writeToDatabase();
         }));
 
+        System.out.println("LM-SENSORS TEST:\n" + SensorDump.read());
+
         //Start webapp
         webApp = new JavalinWebApp() {
             public void onConnect(WsConnectContext ctx) {

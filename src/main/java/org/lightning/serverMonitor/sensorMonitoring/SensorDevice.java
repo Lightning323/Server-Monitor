@@ -11,10 +11,10 @@ public class SensorDevice {
 
     @Override
     public String toString() {
-        return "SensorDevice{" +
+        return "\tSensorDevice{" +
                 "deviceName='" + deviceName + '\'' +
-                ", adapter='" + adapter + '\'' +
-                ", properties=" + properties +
-                "}\n";
+                ",\t adapter='" + adapter + '\'' +
+                ",\t properties=" + properties +
+                "}";
     }
 }
