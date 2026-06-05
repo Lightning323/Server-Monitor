@@ -1,12 +1,6 @@
 import {connect, PacketRegistry} from './connection.js';
 import {
-    setupChart,
-    updateData,
-    updateDataBatch,
-    clearData,
-    updateChartLabel,
-    isChartEmpty,
-    setChartShown
+    setupChart, updateData, updateDataBatch, clearData, updateChartLabel, isChartEmpty, setChartShown
 } from './chart.js';
 
 let sensorAliases = {};
@@ -33,10 +27,8 @@ PacketRegistry.register("SystemInfo", (payload) => {
     if (payload.cpuVendor) document.getElementById('status-cpu-vendor').innerText = payload.cpuVendor;
     if (payload.governor) document.getElementById('status-cpu-governor').innerText = payload.governor;
     if (payload.powerState) document.getElementById('status-cpu-power-state').innerText = payload.powerState;
-    document.getElementById('status-cpu-software-freq').innerText =
-        payload.frequencyPolicy.minSoftwareFrequencyMHZ + "MHz - " + payload.frequencyPolicy.maxSoftwareFrequencyMHZ + "MHz";
-    document.getElementById('status-cpu-hardware-freq').innerText =
-        payload.frequencyPolicy.minHardwareFrequencyMHZ + "MHz - " + payload.frequencyPolicy.maxHardwareFrequencyMHZ + "MHz";
+    document.getElementById('status-cpu-software-freq').innerText = payload.frequencyPolicy.minSoftwareFrequencyMHZ + "MHz - " + payload.frequencyPolicy.maxSoftwareFrequencyMHZ + "MHz";
+    document.getElementById('status-cpu-hardware-freq').innerText = payload.frequencyPolicy.minHardwareFrequencyMHZ + "MHz - " + payload.frequencyPolicy.maxHardwareFrequencyMHZ + "MHz";
     document.getElementById('status-ram').innerText = payload.ramUsage;
 });
 
@@ -47,44 +39,36 @@ let dropdown3 = document.getElementById('sensor-dropdown-3');
 let dropdown4 = document.getElementById('sensor-dropdown-4');
 
 const lastNSamples = 250;
-let chart1 = setupChart(document.getElementById("sensorChart1"),
-    {
-        color: "blue", maxPoints: lastNSamples, latestDataPoint: true
-    });
-let chart2 = setupChart(document.getElementById("sensorChart2"),
-    {
-        color: "red", maxPoints: lastNSamples, latestDataPoint: true
-    });
-let chart3 = setupChart(document.getElementById("sensorChart3"),
-    {
-        color: "green", maxPoints: lastNSamples, latestDataPoint: true
-    });
-let chart4 = setupChart(document.getElementById("sensorChart4"),
-    {
-        color: "purple", maxPoints: lastNSamples, latestDataPoint: true
-    });
+let chart1 = setupChart(document.getElementById("sensorChart1"), {
+    color: "blue", maxPoints: lastNSamples, latestDataPoint: true
+});
+let chart2 = setupChart(document.getElementById("sensorChart2"), {
+    color: "red", maxPoints: lastNSamples, latestDataPoint: true
+});
+let chart3 = setupChart(document.getElementById("sensorChart3"), {
+    color: "green", maxPoints: lastNSamples, latestDataPoint: true
+});
+let chart4 = setupChart(document.getElementById("sensorChart4"), {
+    color: "purple", maxPoints: lastNSamples, latestDataPoint: true
+});
 
 setChartShown(chart1, false);
 setChartShown(chart2, false);
 setChartShown(chart3, false);
 setChartShown(chart4, false);
 
-let historyChart1 = setupChart(document.getElementById("historyChart1"),
-    {
-        color: "blue", label: "History", latestDataPoint: false
-    });
-let historyChart2 = setupChart(document.getElementById("historyChart2"),
-    {
-        color: "red", label: "History", latestDataPoint: false
-    });
-let historyChart3 = setupChart(document.getElementById("historyChart3"),
-    {
-        color: "green", label: "History", latestDataPoint: false
-    });
-let historyChart4 = setupChart(document.getElementById("historyChart4"),
-    {
-        color: "purple", label: "History", latestDataPoint: false
-    });
+let historyChart1 = setupChart(document.getElementById("historyChart1"), {
+    color: "blue", label: "History", latestDataPoint: false
+});
+let historyChart2 = setupChart(document.getElementById("historyChart2"), {
+    color: "red", label: "History", latestDataPoint: false
+});
+let historyChart3 = setupChart(document.getElementById("historyChart3"), {
+    color: "green", label: "History", latestDataPoint: false
+});
+let historyChart4 = setupChart(document.getElementById("historyChart4"), {
+    color: "purple", label: "History", latestDataPoint: false
+});
 
 setChartShown(historyChart1, false);
 setChartShown(historyChart2, false);
@@ -96,8 +80,7 @@ let sensorKeys;
 function updateDropdown(items, dropdownElement, chart, historyChart) {
     const dropdown = dropdownElement.querySelector('.dropdown-menu');
     dropdown.innerHTML = '';
-    dropdown.innerHTML = items.map(item =>
-        `<li><a class="dropdown-item" href="#" data-sensor="${item}">${aliasedName(item)}</a></li>`)
+    dropdown.innerHTML = items.map(item => `<li><a class="dropdown-item" href="#" data-sensor="${item}">${aliasedName(item)}</a></li>`)
         .join('');
     dropdown.innerHTML += `<li><a class="dropdown-item" href="#">None</a></li>`;
     dropdown.querySelectorAll('.dropdown-item').forEach(item => {
@@ -192,9 +175,7 @@ function requestHistory() {
     const now = new Date();
 
 // Now the rest of your logic will work correctly in local time
-    const isToday = targetDate.getFullYear() === now.getFullYear() &&
-        targetDate.getMonth() === now.getMonth() &&
-        targetDate.getDate() === now.getDate();
+    const isToday = targetDate.getFullYear() === now.getFullYear() && targetDate.getMonth() === now.getMonth() && targetDate.getDate() === now.getDate();
 
     let endDate, startDate;
 
@@ -244,9 +225,7 @@ function sendHistoryRequest(historyChart, startDate, endDate, selectedSensors) {
     if (historyChart._selectedSensor && !selectedSensors.includes(historyChart._selectedSensor)) {
         selectedSensors.push(historyChart._selectedSensor);
         PacketRegistry.send("SensorHistoryRequestPacket", {
-            sensor: historyChart._selectedSensor,
-            startDate: startDate.getTime(),
-            endDate: endDate.getTime()
+            sensor: historyChart._selectedSensor, startDate: startDate.getTime(), endDate: endDate.getTime()
         });
     } else {
         setChartShown(historyChart, false);
@@ -289,10 +268,7 @@ function updateLiveChart(chart, dumps) {
 //We recieve history here
 PacketRegistry.register("SensorHistoryPacket", (payload) => {
     var sensor = payload.sensor;
-    if (historyChart2._selectedSensor === sensor) updateHistoryChart(historyChart1, payload);
-    else if (historyChart3._selectedSensor === sensor) updateHistoryChart(historyChart2, payload);
-    else if (historyChart4._selectedSensor === sensor) updateHistoryChart(historyChart3, payload);
-    else updateHistoryChart(historyChart4, payload);
+    if (historyChart2._selectedSensor === sensor) updateHistoryChart(historyChart1, payload); else if (historyChart3._selectedSensor === sensor) updateHistoryChart(historyChart2, payload); else if (historyChart4._selectedSensor === sensor) updateHistoryChart(historyChart3, payload); else updateHistoryChart(historyChart4, payload);
 });
 
 const timeOverTempTableBody = document.getElementById("timeOverTempTable");
@@ -320,7 +296,7 @@ function renderSensorRow(sensorName, timeOverTemp, tableBody) {
         // Logic: display value if it meets threshold, otherwise '-'
         const time = timeOverTemp[threshold];
         cell.textContent = formatMillisToTime(time) || '-';
-        cell.style.backgroundColor = lerpColor([255, 255, 255], [210, 200, 235], time / (60 * 60 * 1000));
+        cell.style.backgroundColor = lerpColor([255, 255, 255], [210, 200, 235], Math.min(1, time / (60 * 60 * 1000)));
         row.appendChild(cell);
     });
 
