@@ -296,7 +296,9 @@ function renderSensorRow(sensorName, timeOverTemp, tableBody) {
         // Logic: display value if it meets threshold, otherwise '-'
         const time = timeOverTemp[threshold];
         cell.textContent = formatMillisToTime(time) || '-';
-        cell.style.backgroundColor = lerpColor([255, 255, 255], [210, 200, 235], Math.min(1, time / (60 * 60 * 1000)));
+        //Color gradient from 0-2 hours
+        cell.style.backgroundColor = lerpColor([255, 255, 255],
+            [105, 95, 175], Math.min(1, time / (2 * 60 * 60 * 1000)));
         row.appendChild(cell);
     });
 
