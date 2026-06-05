@@ -50,7 +50,8 @@ public class Main {
             writeToDatabase();
         }));
 
-        System.out.println("LM-SENSORS TEST:\n" + SensorDump.read());
+        //Debug and catch early failure
+        LOGGER.debug("LM-SENSORS TEST:\n" + SensorDump.read());
 
         //Start webapp
         webApp = new JavalinWebApp() {

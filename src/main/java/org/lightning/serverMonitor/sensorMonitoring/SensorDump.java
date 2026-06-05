@@ -4,10 +4,7 @@ import org.lightning.serverMonitor.platform.Platform;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 public class SensorDump {
@@ -86,7 +83,7 @@ public class SensorDump {
             }
             process.waitFor();
         } catch (Exception e) {
-            throw new RuntimeException("Error parsing sensors output", e);
+            throw new RuntimeException("Error parsing sensors output. Ensure lm-sensors is installed and set up.", e);
         }
 
         //Append additional devices
@@ -112,11 +109,11 @@ public class SensorDump {
         }
     }
 
-    public TreeMap<String, String> getSensorsAsSortedMap() {
-        // TreeMap keeps keys sorted alphabetically automatically
-        TreeMap<String, String> sensors = new TreeMap<>();
-        forEachSensor(sensors::put);
-        return sensors;
+    public List<String> getSortedSensorKeys() {
+        List<String> keys = new ArrayList<>();
+        forEachSensor((key, value) -> keys.add(key));
+        Collections.sort(keys);
+        return keys;
     }
 
     public SensorProperty getSensor(String sensorName, String targetKey) {

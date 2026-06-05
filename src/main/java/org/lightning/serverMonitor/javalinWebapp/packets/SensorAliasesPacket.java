@@ -1,6 +1,7 @@
 package org.lightning.serverMonitor.javalinWebapp.packets;
 
 import java.util.HashMap;
+import java.util.Map;
 
-public record SensorAliasesPacket(HashMap<String, String> aliases) implements WsPacket {
+public record SensorAliasesPacket(Map<String, String> aliases) implements WsPacket {
 }

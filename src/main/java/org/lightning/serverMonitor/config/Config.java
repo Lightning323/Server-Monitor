@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.TreeMap;
 
 import static org.lightning.serverMonitor.Main.LOGGER;
@@ -24,13 +25,12 @@ public class Config {
 
     public int SENSORS_UPDATE_MS = 1000;
     public long METRICS_UPDATE_MS = 1 * 60 * 1000;
-    public HashMap<String, String> SENSOR_ALIASES = new HashMap<>();
+    public TreeMap<String, String> SENSOR_ALIASES = new TreeMap<>();
     public long DATABASE_RECORD_WRITE_INTERVAL_MS = 5 * 60 * 1000;
 
     //========================================================================================================================
     //========================================================================================================================
     //========================================================================================================================
-
 
 
     // === Internal stuff ===
@@ -57,8 +57,8 @@ public class Config {
         LOGGER.info("No settings file found, creating default");
         Config config = new Config();
         SensorDump sensors = SensorDump.read();
-        TreeMap<String, String> sensorsAsSortedMap = sensors.getSensorsAsSortedMap();
-        sensorsAsSortedMap.forEach((sensorName, sensorValue) -> {
+        List<String> sensorsAsSortedMap = sensors.getSortedSensorKeys();
+        sensorsAsSortedMap.forEach((sensorName) -> {
             config.SENSOR_ALIASES.put(sensorName, sensorName);
         });
         save(config); // Save defaults if no file
