@@ -1,6 +1,7 @@
 package org.lightning.serverMonitor.platform;
 import org.lightning.serverMonitor.Main;
 import org.lightning.serverMonitor.javalinWebapp.packets.WsPacket;
+import org.lightning.serverMonitor.sensorMonitoring.SensorDump;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -27,7 +28,7 @@ public abstract class Platform {
         }
         System.out.println("Is admin: " + IS_ADMIN);
         System.out.println("OS: " + OS);
-
+        System.out.println("LM-SENSORS TEST:\n" + SensorDump.read()+"\n\n");
         CPU_VENDOR = Platform.SINGLETON.getCPUVendor();
     }
 
