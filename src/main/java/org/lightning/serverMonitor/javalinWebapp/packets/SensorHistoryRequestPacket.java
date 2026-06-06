@@ -14,7 +14,7 @@ public record SensorHistoryRequestPacket
         if (data.size() == 0) {
             ctx.send(new SensorHistoryPacket(sensor, 0, data.toArray(new SensorDatabase.HistoryEntry[0]), true));
         } else {
-            final int CHUNK_SIZE = 500;
+            final int CHUNK_SIZE = 1000;
             for (int i = 0; i < data.size(); i += CHUNK_SIZE) {
                 if (!ctx.getContext().session.isOpen()) break;
                 int end = Math.min(data.size(), i + CHUNK_SIZE);
