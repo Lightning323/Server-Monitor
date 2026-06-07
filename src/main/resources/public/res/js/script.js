@@ -325,7 +325,7 @@ function setCellTime(cell, time) {
     if (time === NaN || time === undefined) time = 0;
     cell.textContent = formatMillisToTime(time) || '-';
     cell.style.backgroundColor = lerpColor([255, 255, 255],
-        [105, 85, 175], Math.min(1, time / (2 * 60 * 60 * 1000)));
+        [168, 150, 230], Math.min(1, time / (2 * 60 * 60 * 1000)));
     return cell;
 }
 
