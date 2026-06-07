@@ -36,6 +36,10 @@ public class Config {
         public boolean notifyTemp() {
             return notificationThreshold > 0;
         }
+
+        public boolean isTempSensor() {
+            return unit.toLowerCase().contains("c");
+        }
     }
 
 

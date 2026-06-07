@@ -22,7 +22,7 @@ PacketRegistry.register("SensorPropertiesPacket", (payload) => {
     });
     console.log("sensorAliases", sensorAliases);
     console.log("tempratureSensors", tempratureSensors);
-    loadedProperties=true;
+    loadedProperties = true;
     loadLocalStorage();
 });
 
@@ -286,12 +286,11 @@ const timeOverTempTableBody = document.getElementById("timeOverTempTable");
 PacketRegistry.register("TimeOverTempPacket", (payload) => {
     var sensor = payload.sensor;
     var timeOverTemp = payload.timeMsOverTemp;
-    console.log(sensor, timeOverTemp);
+    console.log("Time over temp:", sensor, timeOverTemp);
     renderSensorRow(sensor, timeOverTemp, timeOverTempTableBody);
 });
 
 function renderSensorRow(sensor, timeOverTemp, tableBody) {
-    if (!tempratureSensors.includes(sensor)) return;
     const row = document.createElement('tr');
 
     // Create the Sensor Name column

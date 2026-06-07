@@ -23,7 +23,7 @@ public class TimeOverTempPacket implements WsPacket {
                 timestamps.add(entry.t());
                 values.add(StringUtils.stringToNumber(entry.v()));
             }
-            for (int i = 0; i <= 200; i += 5) {
+            for (int i = 0; i <= 180; i += 1) {
                 timeMsOverTemp.put("" + i, calculateMsoverTemp(timestamps, values, i, 10 * 1000));
             }
         }
