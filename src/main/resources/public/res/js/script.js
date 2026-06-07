@@ -174,6 +174,7 @@ function requestHistory() {
     setChartShown(historyChart3, !isChartEmpty(historyChart3));
     setChartShown(historyChart4, !isChartEmpty(historyChart4));
     timeOverTempTableBody.innerHTML = "";
+    customTempEditElements = []
 
     // 1. Get the raw date from the input
     const dateString = dateSelector.value;
@@ -282,6 +283,12 @@ PacketRegistry.register("SensorHistoryPacket", (payload) => {
 });
 
 const timeOverTempTableBody = document.getElementById("timeOverTempTable");
+const customTempThreshold = document.getElementById("tempThreshold");
+let customTempEditElements = []
+
+customTempThreshold.addEventListener("input", () => {
+    customTempEditElements.forEach(element => element(customTempThreshold.value));
+});
 
 PacketRegistry.register("TimeOverTempPacket", (payload) => {
     var sensor = payload.sensor;
@@ -299,20 +306,27 @@ function renderSensorRow(sensor, timeOverTemp, tableBody) {
     row.appendChild(nameCell);
 
     // Create threshold columns
-    const thresholds = [40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120];
+    const customCell = document.createElement('td');
+    row.appendChild(customCell);
+    customTempEditElements.push((threshold) => setCellTime(customCell, timeOverTemp[threshold]));
+    setCellTime(customCell, timeOverTemp[customTempThreshold.value]);
 
+    const thresholds = [45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115];
     thresholds.forEach(threshold => {
         const cell = document.createElement('td');
-        // Logic: display value if it meets threshold, otherwise '-'
-        const time = timeOverTemp[threshold];
-        cell.textContent = formatMillisToTime(time) || '-';
-        //Color gradient from 0-2 hours
-        cell.style.backgroundColor = lerpColor([255, 255, 255],
-            [105, 85, 175], Math.min(1, time / (2 * 60 * 60 * 1000)));
+        setCellTime(cell, timeOverTemp[threshold]);
         row.appendChild(cell);
     });
 
     tableBody.appendChild(row);
+}
+
+function setCellTime(cell, time) {
+    if (time === NaN || time === undefined) time = 0;
+    cell.textContent = formatMillisToTime(time) || '-';
+    cell.style.backgroundColor = lerpColor([255, 255, 255],
+        [105, 85, 175], Math.min(1, time / (2 * 60 * 60 * 1000)));
+    return cell;
 }
 
 /**
