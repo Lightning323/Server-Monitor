@@ -7,13 +7,25 @@ const gapMarkersPlugin = {
                 if (!u._breaks?.length)
                     return;
 
-                const { ctx } = u;
+                const {ctx} = u;
 
                 ctx.save();
                 ctx.strokeStyle = "#888";
                 ctx.setLineDash([4, 4]);
 
-                for (const idx of u._breaks) {
+                for (const brk of u._breaks) {
+                    const idx = brk.idx;
+                    let gap = brk.gap;
+                    const days = Math.floor(gap / 86400);
+                    const hours = Math.floor((gap % 86400) / 3600);
+                    const mins = Math.floor((gap % 3600) / 60);
+                    if (days > 0)
+                        gap = `${days}d ${hours}h`;
+                    else if (hours > 0)
+                        gap = `${hours}h ${mins}m`;
+                    else
+                        gap = `${mins}m`;
+
 
                     const x = Math.round(u.valToPos(idx, "x", true));
 
@@ -21,6 +33,16 @@ const gapMarkersPlugin = {
                     ctx.moveTo(x, u.bbox.top);
                     ctx.lineTo(x, u.bbox.top + u.bbox.height);
                     ctx.stroke();
+
+                    ctx.fillStyle = "#333";
+                    ctx.font = "11px sans-serif";
+                    ctx.textAlign = "left";
+
+                    ctx.fillText(
+                        gap,
+                        x + 4,
+                        u.bbox.top + 14
+                    );
                 }
 
                 ctx.restore();
@@ -30,25 +52,31 @@ const gapMarkersPlugin = {
 };
 
 const ro = new ResizeObserver(entries => {
-    for (let entry of entries) {
-        // Access the instance we attached to the element
+    for (const entry of entries) {
         const chart = entry.target._uPlotInstance;
-        const newWidth = entry.contentRect.width;
 
-        if (chart && newWidth > 0) {
-            var height = chart._height;
-            //Responsive height
-            if (window.innerWidth < 900 && height > 100) {
-                height *= 0.5;
-            }
-            // console.log("Resizing chart");
-            chart.setSize({
-                width: newWidth,
-                height: height // Keep height constant
-            });
-        }
+        if (chart)
+            resizeChart(chart);
     }
 });
+
+
+function resizeChart(chart) {
+    if (!chart)
+        return;
+
+    const width = chart._containerDiv.offsetWidth;
+
+    let height = chart._height;
+
+    if (window.innerWidth < 900 && height > 100)
+        height *= 0.5;
+
+    chart.setSize({
+        width,
+        height,
+    });
+}
 
 function setupChart(container, {
     color = "red",
@@ -79,7 +107,7 @@ function setupChart(container, {
         height: height,
         scales: {
             x: {},
-            y: { min: yMin, max: yMax }
+            y: {min: yMin, max: yMax}
         },
         plugins: [gapMarkersPlugin],
         axes: [{
@@ -141,15 +169,19 @@ function setupChart(container, {
     chartTarget._uPlotInstance = chart;
     chart._containerDiv = container;
     chart._height = height;
+    chart._target = chartTarget;
+    chart._realTimes = [];
+    chart._breaks = [];
     ro.observe(chartTarget);
     return chart;
 }
 
 function clearData(chart) {
     chart.setData([[], []]);
-    if (chart._canvasLabel) {
-        chart._canvasLabel.innerText = "";
-    }
+    chart._realTimes = [];
+    chart._breaks = [];
+    chart._canvasLabel.innerText = "";
+    resizeChart(chart);
 }
 
 function toNumber(value) {
@@ -196,9 +228,13 @@ function updateDataBatch(chart, timestamps, values) {
     if (!chart._breaks)
         chart._breaks = [];
     for (let i = 1; i < newTimes.length; i++) {
-        if (newTimes[i] - newTimes[i - 1] > GAP_THRESHOLD) {
-            chart._breaks.push(chart._realTimes.length + i);
-            // chart._breaks.push(300);
+        let dist = newTimes[i] - newTimes[i - 1];
+        if (dist > GAP_THRESHOLD) {
+            let baseIdx = chart._realTimes.length + i;
+            chart._breaks.push({
+                idx: baseIdx,
+                gap: dist
+            });
         }
     }
 
@@ -210,7 +246,7 @@ function updateDataBatch(chart, timestamps, values) {
 
     // Rebuild index axis (0,1,2,3...)
     const totalPoints = vals.length;
-    indices = Array.from({ length: totalPoints }, (_, i) => i);
+    indices = Array.from({length: totalPoints}, (_, i) => i);
 
     // Trim if maxPoints exceeded
     if (chart.maxPoints && totalPoints > chart.maxPoints) {
@@ -220,11 +256,11 @@ function updateDataBatch(chart, timestamps, values) {
         vals.splice(0, diff);
 
         // Rebuild indices after trimming
-        indices = Array.from({ length: vals.length }, (_, i) => i);
+        indices = Array.from({length: vals.length}, (_, i) => i);
     }
 
     chart.setData([indices, vals]);
-
+    resizeChart(chart);
 }
 
 function isChartEmpty(u) {
