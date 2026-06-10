@@ -1,6 +1,6 @@
 import {connect, PacketRegistry} from './connection.js';
 import {
-    setupChart, updateData, updateDataBatch, clearData, updateChartLabel, isChartEmpty, setChartShown
+    setupChart, updateDataBatch, clearData, updateChartLabel, isChartEmpty, setChartShown
 } from './chart.js';
 
 let sensorAliases = {};

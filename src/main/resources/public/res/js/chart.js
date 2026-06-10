@@ -1,5 +1,34 @@
 import uPlot from 'uplot';
 
+const gapMarkersPlugin = {
+    hooks: {
+        draw: [
+            u => {
+                if (!u._breaks?.length)
+                    return;
+
+                const { ctx } = u;
+
+                ctx.save();
+                ctx.strokeStyle = "#888";
+                ctx.setLineDash([4, 4]);
+
+                for (const idx of u._breaks) {
+
+                    const x = Math.round(u.valToPos(idx, "x", true));
+
+                    ctx.beginPath();
+                    ctx.moveTo(x, u.bbox.top);
+                    ctx.lineTo(x, u.bbox.top + u.bbox.height);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        ]
+    }
+};
+
 const ro = new ResizeObserver(entries => {
     for (let entry of entries) {
         // Access the instance we attached to the element
@@ -48,8 +77,39 @@ function setupChart(container, {
     const opts = {
         width: container.offsetWidth,
         height: height,
-        series: [{label: "Time"}, {stroke: color, label: label, width: 2}],
-        scales: {x: {time: true}, y: {min: yMin, max: yMax}},
+        scales: {
+            x: {},
+            y: { min: yMin, max: yMax }
+        },
+        plugins: [gapMarkersPlugin],
+        axes: [{
+            values: (u, splits) =>
+                splits.map(i => {
+                    const ts = u._realTimes[Math.round(i)];
+                    if (ts == null) return "";
+
+                    return new Date(ts * 1000).toLocaleTimeString();
+                })
+        }],
+        series: [
+            {
+                label: "Time",
+                value: (u, xVal) => {
+                    const idx = Math.round(xVal);
+
+                    const ts = u._realTimes?.[idx];
+                    if (ts == null)
+                        return "";
+
+                    return new Date(ts * 1000).toLocaleString();
+                }
+            },
+            {
+                stroke: color,
+                label: label,
+                width: 2
+            }
+        ],
         cursor: {
             drag: {
                 x: true,
@@ -99,43 +159,72 @@ function toNumber(value) {
 }
 
 
-function updateData(chart, dateMS, valueStr) {
-    let [ts, vals] = chart.data;
-    var date = parseFloat(dateMS / 1000);
-    ts.push(date);
-    vals.push(toNumber(valueStr));
-
-    if (chart.maxPoints && ts.length > chart.maxPoints) {
-        ts.shift();
-        vals.shift();
-    }
-    if (chart._canvasLabel && chart._labelLatestDataPoint) {
-        chart._canvasLabel.innerText = valueStr;
-    }
-
-    chart.setData([ts, vals]);
-}
+// function updateData(chart, dateMS, valueStr) {
+//     let [ts, vals] = chart.data;
+//     var date = parseFloat(dateMS / 1000);
+//     ts.push(date);
+//     vals.push(toNumber(valueStr));
+//
+//     if (chart.maxPoints && ts.length > chart.maxPoints) {
+//         ts.shift();
+//         vals.shift();
+//     }
+//     if (chart._canvasLabel && chart._labelLatestDataPoint) {
+//         chart._canvasLabel.innerText = valueStr;
+//     }
+//
+//     chart.setData([ts, vals]);
+// }
 
 function updateDataBatch(chart, timestamps, values) {
-    let [ts, vals] = chart.data;
-
+    // console.log("OUTPUT____",timestamps);
+    let [indices, vals] = chart.data;
     if (chart._canvasLabel && chart._labelLatestDataPoint) {
         chart._canvasLabel.innerText = values[values.length - 1];
     }
-
-    timestamps = timestamps.map(date => parseFloat(date.getTime() / 1000));
-    values = values.map(value => toNumber(value));
-    ts.push(...timestamps);
-    vals.push(...values);
-
-    if (chart.maxPoints && ts.length > chart.maxPoints) {
-        const diff = ts.length - chart.maxPoints;
-        ts.splice(0, diff);
-        vals.splice(0, diff);
+    // Initialize timestamp storage if needed
+    if (!chart._realTimes) {
+        chart._realTimes = [];
     }
 
-    chart.setData([ts, vals]);
-    // setChartShown(chart, !isChartEmpty(chart));
+    // Convert timestamps to unix seconds and values to numbers
+    const newTimes = timestamps.map(date => date.getTime() / 1000);
+    const newVals = values.map(value => toNumber(value));
+
+    //Add gaps property
+    const GAP_THRESHOLD = 60 * 60; // 1 hour
+    if (!chart._breaks)
+        chart._breaks = [];
+    for (let i = 1; i < newTimes.length; i++) {
+        if (newTimes[i] - newTimes[i - 1] > GAP_THRESHOLD) {
+            chart._breaks.push(chart._realTimes.length + i);
+            // chart._breaks.push(300);
+        }
+    }
+
+    // Append real timestamps
+    chart._realTimes.push(...newTimes);
+
+    // Append values
+    vals.push(...newVals);
+
+    // Rebuild index axis (0,1,2,3...)
+    const totalPoints = vals.length;
+    indices = Array.from({ length: totalPoints }, (_, i) => i);
+
+    // Trim if maxPoints exceeded
+    if (chart.maxPoints && totalPoints > chart.maxPoints) {
+        const diff = totalPoints - chart.maxPoints;
+
+        chart._realTimes.splice(0, diff);
+        vals.splice(0, diff);
+
+        // Rebuild indices after trimming
+        indices = Array.from({ length: vals.length }, (_, i) => i);
+    }
+
+    chart.setData([indices, vals]);
+
 }
 
 function isChartEmpty(u) {
@@ -163,4 +252,4 @@ function updateChartLabel(chart, newLabel) {
     if (!isChartEmpty(chart)) chart.redraw();
 }
 
-export {setupChart, updateData, updateDataBatch, clearData, updateChartLabel, isChartEmpty, setChartShown};
+export {setupChart, updateDataBatch, clearData, updateChartLabel, isChartEmpty, setChartShown};
