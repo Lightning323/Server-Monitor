@@ -10,9 +10,10 @@ public record SensorHistoryRequestPacket
         (String sensor, long startDate, long endDate) implements WsPacket {
 
     final static int CHUNK_SIZE = 1500;
-    final static int INTERVAL_MS = 1000;
 
     public void handle(PacketContext ctx) {
+        final int INTERVAL_MS = Math.max(500, Main.config.SENSORS_UPDATE_MS);
+
         List<SensorDatabase.HistoryEntry> data = SensorDatabase.getSensorDataRange(sensor, startDate, endDate, INTERVAL_MS);
         System.out.println("Sensor data range for " + sensor + ": " + data.size());
         if (data.size() == 0) {
