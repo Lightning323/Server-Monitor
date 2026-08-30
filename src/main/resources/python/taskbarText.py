@@ -17,21 +17,37 @@ def update_label(indicator, text):
     indicator.set_label(text, text)
     return False
 
+def send_action(action):
+    print(action, flush=True)
+
+def open_webapp(_):
+    send_action("OPEN_WEBAPP")
+
+def quit_monitor(_):
+    send_action("QUIT")
+    Gtk.main_quit()
+
 def main():
-    # Use a widely available system icon name
+    icon_path = sys.argv[1] if len(sys.argv) > 1 else "utilities-system-monitor"
     indicator = appindicator.Indicator.new(
-        "hardware_monitor",
-        "utilities-system-monitor",
+        "server-monitor",
+        icon_path,
         appindicator.IndicatorCategory.HARDWARE
     )
+    # The Java launcher supplies the bundled Server Monitor icon as an absolute path.
+    if len(sys.argv) > 1:
+        indicator.set_icon_full(icon_path, "Server Monitor")
     indicator.set_status(appindicator.IndicatorStatus.ACTIVE)
 
     # Initial placeholder text so space is reserved immediately on launch
     indicator.set_label("Initializing...", "00% 00°C 0000RPM")
 
     menu = Gtk.Menu()
+    open_item = Gtk.MenuItem(label="Open web app")
+    open_item.connect("activate", open_webapp)
+    menu.append(open_item)
     quit_item = Gtk.MenuItem(label="Quit")
-    quit_item.connect("activate", lambda _: Gtk.main_quit())
+    quit_item.connect("activate", quit_monitor)
     menu.append(quit_item)
     menu.show_all()
     indicator.set_menu(menu)
