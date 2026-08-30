@@ -9,7 +9,9 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,6 +29,9 @@ public class Config {
     public long METRICS_UPDATE_MS = 1 * 60 * 1000;
     public TreeMap<String, SensorConfigProperty> SENSORS = new TreeMap<>();
     public long DATABASE_RECORD_WRITE_INTERVAL_MS = 5 * 60 * 1000;
+    public List<TaskbarSensor> TASKBAR_SENSORS = new ArrayList<>();
+
+    public record TaskbarSensor(String alias, String sensorId){};
 
     public record SensorConfigProperty(
             String alias,

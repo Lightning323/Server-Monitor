@@ -7,6 +7,7 @@ import org.lightning.serverMonitor.sensorMonitoring.SensorDatabase;
 import org.lightning.serverMonitor.javalinWebapp.JavalinWebApp;
 import org.lightning.serverMonitor.platform.Platform;
 import org.lightning.serverMonitor.sensorMonitoring.SensorDump;
+import org.lightning.serverMonitor.taskbar.TaskbarTray;
 import org.lightning.serverMonitor.utils.ExtendedLogger;
 import org.lightning.serverMonitor.utils.MiscUtils;
 import org.lightning.serverMonitor.utils.StringUtils;
@@ -51,7 +52,6 @@ public class Main {
         }));
 
 
-
         //Start webapp
         webApp = new JavalinWebApp() {
             public void onConnect(WsConnectContext ctx) {
@@ -83,7 +83,26 @@ public class Main {
                 if (lastNSamples.size() > lastNSamplesSize) {
                     lastNSamples.remove(0);
                 }
+
+                //Update webapp
                 webApp.broadcastPacket(new SensorDumpPacket(sensorData));
+
+                //Update taskbar sensors
+                if (taskbarTray.isEnabled()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (Config.TaskbarSensor taskbarSensor : Main.config.TASKBAR_SENSORS) {
+                        if (taskbarSensor.alias() != null && !taskbarSensor.alias().isBlank()) {
+                            sb.append(taskbarSensor.alias()).append(": ");
+                        }
+                        sb.append(sensorData.getSensor(taskbarSensor.sensorId()).value
+                                .replaceFirst("[+]","")
+//                                .replaceFirst("[°]","")
+                        );
+                        sb.append("  ");
+                    }
+                    taskbarTray.update(sb.toString().trim());
+                }
+
 
                 //Write to log
                 if (System.currentTimeMillis() - lastDatabaseWrite > Main.config.DATABASE_RECORD_WRITE_INTERVAL_MS && !cachedHistory.isEmpty()) {

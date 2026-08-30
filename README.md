@@ -28,7 +28,11 @@ Server-Monitor relies on `lm-sensors` to pull data from your hardware.
 
 ```bash
 # Install sensors
-sudo apt update && sudo apt install lm-sensors -y
+sudo apt update
+sudo apt install lm-sensors -y
+
+# If you want to use the taskbar, you will need to install the following dependencies
+sudo apt install gir1.2-appindicator3-0.1 python3-gi
 
 # Detect hardware sensors (You will be required to answer YES or NO to detect various sensors)
 sudo sensors-detect
@@ -36,6 +40,7 @@ sudo sensors-detect
 # Verify it works
 sensors
 ```
+
 ### 2. Configuration
 Edit your `config.json` file. Here is an example to get started:
 ```yml
@@ -53,6 +58,16 @@ Edit your `config.json` file. Here is an example to get started:
           "notificationThreshold": -1
         }
     },
-    "DATABASE_RECORD_WRITE_INTERVAL_MS": 300000 <-- how often to write to database
+    "DATABASE_RECORD_WRITE_INTERVAL_MS": 300000, <-- how often to write to database
+    "TASKBAR_SENSORS": [ <-- sensor readings to display in the taskbar (optional) (These will be displayed in the order they are listed)
+      {
+        "alias": "CPU", <-- the alias is optional
+        "sensorId": "cpu__load"
+      },
+      {
+        "alias": "GPU",
+        "sensorId": "amdgpu_pci_0300__PCI_adapter__edge"
+      }
+    ]
 }
 ```
