@@ -23,6 +23,9 @@ def send_action(action):
 def open_webapp(_):
     send_action("OPEN_WEBAPP")
 
+def open_config(_):
+    send_action("OPEN_CONFIG")
+
 def quit_monitor(_):
     send_action("QUIT")
     Gtk.main_quit()
@@ -43,9 +46,15 @@ def main():
     indicator.set_label("Initializing...", "00% 00°C 0000RPM")
 
     menu = Gtk.Menu()
+
     open_item = Gtk.MenuItem(label="Open web app")
     open_item.connect("activate", open_webapp)
     menu.append(open_item)
+
+    config_item = Gtk.MenuItem(label="Open config")
+    config_item.connect("activate", open_config)
+    menu.append(config_item)
+
     quit_item = Gtk.MenuItem(label="Quit")
     quit_item.connect("activate", quit_monitor)
     menu.append(quit_item)

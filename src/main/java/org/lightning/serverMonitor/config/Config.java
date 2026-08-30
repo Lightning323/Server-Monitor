@@ -55,7 +55,7 @@ public class Config {
 
     // === Internal stuff ===
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path SETTINGS_PATH = Paths.get(System.getProperty("user.dir"), "config.json");
+    public static final Path SETTINGS_PATH = Paths.get(System.getProperty("user.dir"), "config.json");
 
     public static void save(Config settings) {
         try (Writer writer = Files.newBufferedWriter(SETTINGS_PATH)) {

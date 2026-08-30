@@ -95,8 +95,7 @@ public class Main {
                             sb.append(taskbarSensor.alias()).append(": ");
                         }
                         sb.append(sensorData.getSensor(taskbarSensor.sensorId()).value
-                                .replaceFirst("[+]","")
-//                                .replaceFirst("[°]","")
+                                .replaceFirst("[+]","").replaceFirst("\\.\\d+", "")
                         );
                         sb.append("  ");
                     }

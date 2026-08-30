@@ -1,9 +1,12 @@
 package org.lightning.serverMonitor.taskbar;
 
 import org.lightning.serverMonitor.Main;
+import org.lightning.serverMonitor.config.Config;
 
 import java.awt.*;
+import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JOptionPane;
 
@@ -49,6 +52,15 @@ public class TaskbarTray {
             case "QUIT" -> {
                 Main.LOGGER.notification("Quit requested from taskbar tray");
                 System.exit(0);
+            }
+            case "OPEN_CONFIG" -> {
+                Main.LOGGER.notification("Open config requested from taskbar tray");
+                Path configPath = Config.SETTINGS_PATH;
+                try {
+                    Desktop.getDesktop().open(configPath.toFile());
+                } catch (Exception e) {
+                    Main.LOGGER.error("Failed to open config file", e);
+                }
             }
             default -> Main.LOGGER.debug("Ignoring unknown taskbar menu action: " + action);
         }
