@@ -11,7 +11,7 @@ class TaskbarMonitorBridge {
     private static final String TASKBAR_FILE_PATH = "/python/taskbarText.py";
     private static final String ICON_FILE_PATH = "/icon_large.png";
 
-    public void startBridge(Consumer<String> menuActionHandler) throws IOException {
+    public void startBridge(Consumer<String> menuActionHandler, Consumer<String> failureHandler) throws IOException {
         File scriptPath = extractResourceToTempFile(TASKBAR_FILE_PATH, ".py");
         File iconPath = extractResourceToTempFile(ICON_FILE_PATH, ".png");
         // Launch the Python appindicator helper script
@@ -24,6 +24,25 @@ class TaskbarMonitorBridge {
         Thread menuActionReader = new Thread(() -> readMenuActions(menuActionHandler), "taskbar-menu-action-reader");
         menuActionReader.setDaemon(true);
         menuActionReader.start();
+
+        StringBuilder errorOutput = new StringBuilder();
+        Thread errorReader = new Thread(() -> readErrors(errorOutput), "taskbar-error-reader");
+        errorReader.setDaemon(true);
+        errorReader.start();
+
+        pythonProcess.onExit().thenRun(() -> {
+            if (!isStopping()) {
+                String details;
+                synchronized (errorOutput) {
+                    details = errorOutput.toString().trim();
+                }
+                String message = "The taskbar tray could not start. Install Python 3 and the GTK AppIndicator libraries.";
+                if (!details.isEmpty()) {
+                    message += "\n\nDetails: " + details;
+                }
+                failureHandler.accept(message);
+            }
+        });
 
         // Ensure the child process is terminated if the JVM shuts down
         Runtime.getRuntime().addShutdownHook(new Thread(this::stopBridge));
@@ -41,6 +60,27 @@ class TaskbarMonitorBridge {
                 System.err.println("Failed to read taskbar menu action: " + e.getMessage());
             }
         }
+    }
+
+    private void readErrors(StringBuilder errorOutput) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(pythonProcess.getErrorStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                synchronized (errorOutput) {
+                    if (errorOutput.length() > 0) {
+                        errorOutput.append(System.lineSeparator());
+                    }
+                    errorOutput.append(line);
+                }
+            }
+        } catch (IOException ignored) {
+            // The process has already stopped or its error stream was closed.
+        }
+    }
+
+    private boolean isStopping() {
+        return pythonProcess == null || !pythonProcess.isAlive() && pipeWriter == null;
     }
 
     public void updateTaskbarText(String text) {
@@ -64,6 +104,7 @@ class TaskbarMonitorBridge {
                 pipeWriter.close();
             }
         } catch (IOException ignored) {}
+        pipeWriter = null;
 
         if (pythonProcess != null && pythonProcess.isAlive()) {
             pythonProcess.destroyForcibly();
@@ -95,7 +136,10 @@ class TaskbarMonitorBridge {
         TaskbarMonitorBridge bridge = new TaskbarMonitorBridge();
 
         try {
-            bridge.startBridge(action -> System.out.println("Tray action: " + action));
+            bridge.startBridge(
+                    action -> System.out.println("Tray action: " + action),
+                    message -> System.err.println("Tray error: " + message)
+            );
 
             // Simulation loop: Update the taskbar every 2 seconds
             int mockGpuTemp = 38;
