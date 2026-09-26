@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 
 public class Main {
-    public static final String APP_VERSION = "2.2.0";
+    public static final String APP_VERSION = "2.3.0";
     //Add -Denv=dev VM option in run configuration
     public static final boolean DEV_ENV = System.getProperty("env") != null && System.getProperty("env").equals("dev");
     /// //////////////////////////////////////////////////////////////////////////////////////

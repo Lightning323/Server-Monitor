@@ -1,6 +1,6 @@
 :root {
     --theme-color: #3931c5;
-    --main-color: #5a00c6;
+    --main-color: #3931c5;
     --secondary-color: #e6e5ff;
     --trinary-color: #f0f0f0;
     --history-temp-color: rgb(105 95 175);
@@ -22,7 +22,6 @@
 /* Dark palette. Bootstrap swaps the components itself off [data-bs-theme], this
    block only covers what the custom properties above and the canvas charts use. */
 [data-bs-theme="dark"] {
-    --main-color: #5100b0;
     --secondary-color: #2f2e4a;
     --trinary-color: #26262e;
     --header-text-color: #f2f2ff;
