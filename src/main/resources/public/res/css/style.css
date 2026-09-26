@@ -182,7 +182,7 @@ table [data-bs-toggle="collapse"] tr td {
 
 @media (prefers-color-scheme: dark) {
     .chartWrapper {
-        background-color: #111;
+        background-color: rgba(0,0,0,0.5);
     }
 }
 
