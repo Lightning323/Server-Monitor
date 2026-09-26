@@ -2,6 +2,7 @@ import {connect, PacketRegistry} from './connection.js';
 import {
     setupChart, updateDataBatch, clearData, updateChartLabel, isChartEmpty, setChartShown
 } from './chart.js';
+import {token, onThemeChange, seriesColor, parseColor} from './theme.js';
 
 let sensorAliases = {};
 let tempratureSensors = [];
@@ -50,16 +51,16 @@ let dropdown4 = document.getElementById('sensor-dropdown-4');
 
 const lastNSamples = 250;
 let chart1 = setupChart(document.getElementById("sensorChart1"), {
-    color: "blue", maxPoints: lastNSamples, latestDataPoint: true
+    color: seriesColor('--series-1-color'), maxPoints: lastNSamples, latestDataPoint: true
 });
 let chart2 = setupChart(document.getElementById("sensorChart2"), {
-    color: "red", maxPoints: lastNSamples, latestDataPoint: true
+    color: seriesColor('--series-2-color'), maxPoints: lastNSamples, latestDataPoint: true
 });
 let chart3 = setupChart(document.getElementById("sensorChart3"), {
-    color: "green", maxPoints: lastNSamples, latestDataPoint: true
+    color: seriesColor('--series-3-color'), maxPoints: lastNSamples, latestDataPoint: true
 });
 let chart4 = setupChart(document.getElementById("sensorChart4"), {
-    color: "purple", maxPoints: lastNSamples, latestDataPoint: true
+    color: seriesColor('--series-4-color'), maxPoints: lastNSamples, latestDataPoint: true
 });
 
 setChartShown(chart1, false);
@@ -68,16 +69,16 @@ setChartShown(chart3, false);
 setChartShown(chart4, false);
 
 let historyChart1 = setupChart(document.getElementById("historyChart1"), {
-    color: "blue", label: "History", latestDataPoint: false
+    color: seriesColor('--series-1-color'), label: "History", latestDataPoint: false
 });
 let historyChart2 = setupChart(document.getElementById("historyChart2"), {
-    color: "red", label: "History", latestDataPoint: false
+    color: seriesColor('--series-2-color'), label: "History", latestDataPoint: false
 });
 let historyChart3 = setupChart(document.getElementById("historyChart3"), {
-    color: "green", label: "History", latestDataPoint: false
+    color: seriesColor('--series-3-color'), label: "History", latestDataPoint: false
 });
 let historyChart4 = setupChart(document.getElementById("historyChart4"), {
-    color: "purple", label: "History", latestDataPoint: false
+    color: seriesColor('--series-4-color'), label: "History", latestDataPoint: false
 });
 
 setChartShown(historyChart1, false);
@@ -175,6 +176,7 @@ function requestHistory() {
     setChartShown(historyChart4, !isChartEmpty(historyChart4));
     timeOverTempTableBody.innerHTML = "";
     customTempEditElements = []
+    timeOverTempCells = []
 
     // 1. Get the raw date from the input
     const dateString = dateSelector.value;
@@ -285,9 +287,16 @@ PacketRegistry.register("SensorHistoryPacket", (payload) => {
 const timeOverTempTableBody = document.getElementById("timeOverTempTable");
 const customTempThreshold = document.getElementById("tempThreshold");
 let customTempEditElements = []
+// Cells keep their raw duration here so the heat map can be recoloured on a
+// theme flip without waiting for the next TimeOverTempPacket.
+let timeOverTempCells = []
 
 customTempThreshold.addEventListener("input", () => {
     customTempEditElements.forEach(element => element(customTempThreshold.value));
+});
+
+onThemeChange(() => {
+    timeOverTempCells.forEach(({cell, time}) => paintHeat(cell, time));
 });
 
 PacketRegistry.register("TimeOverTempPacket", (payload) => {
@@ -324,9 +333,14 @@ function renderSensorRow(sensor, timeOverTemp, tableBody) {
 function setCellTime(cell, time) {
     if (time === NaN || time === undefined) time = 0;
     cell.textContent = formatMillisToTime(time) || '-';
-    cell.style.backgroundColor = lerpColor([255, 255, 255],
-        [168, 150, 230], Math.min(1, time / (2 * 60 * 60 * 1000)));
+    timeOverTempCells.push({cell, time});
+    paintHeat(cell, time);
     return cell;
+}
+
+function paintHeat(cell, time) {
+    cell.style.backgroundColor = lerpColor(parseColor(token('--heat-start-color')),
+        parseColor(token('--heat-end-color')), Math.min(1, time / (2 * 60 * 60 * 1000)));
 }
 
 /**

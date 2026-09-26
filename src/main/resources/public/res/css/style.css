@@ -1,9 +1,43 @@
 :root {
     --theme-color: #3931c5;
-    --main-color: #3931c5;
+    --main-color: #5a00c6;
     --secondary-color: #e6e5ff;
     --trinary-color: #f0f0f0;
-    --history-temp-color: rgb(105 95 175)
+    --history-temp-color: rgb(105 95 175);
+    --header-text-color: #ffffff;
+    --code-text-color: #000000;
+    --chart-label-shadow: #ffffff;
+    --chart-axis-color: #000000;
+    --chart-grid-color: rgba(0, 0, 0, 0.07);
+    --chart-gap-color: #888888;
+    --chart-gap-text-color: #333333;
+    --series-1-color: blue;
+    --series-2-color: red;
+    --series-3-color: green;
+    --series-4-color: purple;
+    --heat-start-color: #ffffff;
+    --heat-end-color: #a896e6;
+}
+
+/* Dark palette. Bootstrap swaps the components itself off [data-bs-theme], this
+   block only covers what the custom properties above and the canvas charts use. */
+[data-bs-theme="dark"] {
+    --main-color: #5100b0;
+    --secondary-color: #2f2e4a;
+    --trinary-color: #26262e;
+    --header-text-color: #f2f2ff;
+    --code-text-color: #dee2e6;
+    --chart-label-shadow: #0d0d0d;
+    --chart-axis-color: #ced4da;
+    --chart-grid-color: rgba(255, 255, 255, 0.1);
+    --chart-gap-color: #6c757d;
+    --chart-gap-text-color: #ced4da;
+    --series-1-color: #6ea8fe;
+    --series-2-color: #ff7b72;
+    --series-3-color: #7ee787;
+    --series-4-color: #d2a8ff;
+    --heat-start-color: #212529;
+    --heat-end-color: #a896e6;
 }
 
 .monitor-chart {
@@ -17,7 +51,7 @@ body, html {
 
 header {
     background-color: var(--main-color);
-    color: white;
+    color: var(--header-text-color);
     padding: 8px;
     vertical-align: middle;
     text-align: center;
@@ -43,6 +77,7 @@ header img {
 h2 {
     font-size: 1.4em;
 }
+
 h3 {
     font-size: 1.2em;
 }
@@ -52,7 +87,8 @@ h2, h3 {
     padding: 10px;
     border-radius: 5px;
 }
-h3{
+
+h3 {
     background-color: var(--trinary-color);
 }
 
@@ -90,7 +126,7 @@ container button {
 }
 
 code {
-    color: initial;
+    color: var(--code-text-color);
     font-size: 1em;
 }
 
@@ -121,7 +157,7 @@ table [data-bs-toggle="collapse"] tr td {
     user-select: none;
     pointer-events: none;
     white-space: nowrap;
-    text-shadow: 0px 0px 4px white;
+    text-shadow: 0px 0px 4px var(--chart-label-shadow);
 }
 
 .chart-label2 {
@@ -136,7 +172,19 @@ table [data-bs-toggle="collapse"] tr td {
 }
 
 .chart-target {
-    padding-top: 30px;
+    padding-top:30px;
+}
+
+.chartWrapper {
+    padding: 5px;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .chartWrapper {
+        background-color: #111;
+    }
 }
 
 @media (max-width: 1200px) {
@@ -148,7 +196,7 @@ table [data-bs-toggle="collapse"] tr td {
         grid-template-columns: repeat(auto-fit, minmax(60vw, 1fr));
     }
 
-    h2,h3 {
+    h2, h3 {
         padding: 8px;
         border-radius: 0;
     }

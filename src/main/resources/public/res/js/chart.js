@@ -1,4 +1,7 @@
 import uPlot from 'uplot';
+import {token, onThemeChange} from './theme.js';
+
+const charts = new Set();
 
 const gapMarkersPlugin = {
     hooks: {
@@ -10,7 +13,7 @@ const gapMarkersPlugin = {
                 const {ctx} = u;
 
                 ctx.save();
-                ctx.strokeStyle = "#888";
+                ctx.strokeStyle = token('--chart-gap-color');
                 ctx.setLineDash([4, 4]);
 
                 for (const brk of u._breaks) {
@@ -34,7 +37,7 @@ const gapMarkersPlugin = {
                     ctx.lineTo(x, u.bbox.top + u.bbox.height);
                     ctx.stroke();
 
-                    ctx.fillStyle = "#333";
+                    ctx.fillStyle = token('--chart-gap-text-color');
                     ctx.font = "11px sans-serif";
                     ctx.textAlign = "left";
 
@@ -148,6 +151,7 @@ function setupChart(container, {
 
     const chart = new uPlot(opts, [[], []], chartTarget);
     chart.maxPoints = maxPoints;
+    applyAxisColors(chart);
 
 
     const canvasLabel = document.createElement("span");
@@ -173,8 +177,37 @@ function setupChart(container, {
     chart._realTimes = [];
     chart._breaks = [];
     ro.observe(chartTarget);
+    charts.add(chart);
     return chart;
 }
+
+/**
+ * uPlot wraps every colour in fnOrSelf, so a getter keeps being re-evaluated on
+ * each draw. The grid/ticks option objects however are shallow-merged against
+ * the defaults, so passing them in opts would drop show/filter/width. Patching
+ * the already-resolved getters keeps the defaults and tracks the palette.
+ */
+function applyAxisColors(chart) {
+    const axis = chart.axes[0];
+    axis.stroke = () => token('--chart-axis-color');
+    axis.grid.stroke = () => token('--chart-grid-color');
+    axis.ticks.stroke = () => token('--chart-grid-color');
+}
+
+// Canvas colours are re-read from the tokens above, but the legend swatches are
+// inline styles set once, and history charts never redraw on their own.
+onThemeChange(() => {
+    charts.forEach(chart => {
+        // One .u-series row per series, including the x series at index 0, which
+        // uPlot deliberately leaves unstyled.
+        chart.root.querySelectorAll('.u-legend .u-series').forEach((row, i) => {
+            const marker = row.querySelector('.u-marker');
+            if (i > 0 && marker) marker.style.borderColor = chart.series[i].stroke(chart, i);
+        });
+        // Hidden charts are re-laid-out by setChartShown on the way back in.
+        if (chart._containerDiv.offsetWidth) chart.redraw();
+    });
+});
 
 function clearData(chart) {
     chart.setData([[], []]);
