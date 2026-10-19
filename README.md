@@ -31,7 +31,8 @@ Server-Monitor relies on `lm-sensors` to pull data from your hardware.
 sudo apt update
 sudo apt install lm-sensors -y
 
-# If you want to use the taskbar, you will need to install the following dependencies
+# The taskbar widget runs as a python subprocess. If you want to enable it, you will need to install the following packages
+sudo apt install python
 sudo apt install gir1.2-appindicator3-0.1 python3-gi
 
 # Detect hardware sensors (You will be required to answer YES or NO to detect various sensors)
