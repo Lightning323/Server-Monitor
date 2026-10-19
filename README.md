@@ -23,22 +23,23 @@ Before installing, ensure your system meets these requirements:
 ## Installation & Setup
 Note that this guide is for Ubuntu/Debian. Other Linux distributions may require different commands.
 
-### 1. Install & Configure lm-sensors
+### 1. Install & Configure Dependencies
 Server-Monitor relies on `lm-sensors` to pull data from your hardware.
 
 ```bash
+# The taskbar widget runs as a python subprocess.
+# If you want to enable it, you will need to install the following packages
+sudo apt install python
+sudo apt install gir1.2-appindicator3-0.1 python3-gi
+
 # Install sensors
 sudo apt update
 sudo apt install lm-sensors -y
 
-# The taskbar widget runs as a python subprocess. If you want to enable it, you will need to install the following packages
-sudo apt install python
-sudo apt install gir1.2-appindicator3-0.1 python3-gi
-
 # Detect hardware sensors (You will be required to answer YES or NO to detect various sensors)
 sudo sensors-detect
 
-# Verify it works
+# Verify LM-Sensors works
 sensors
 ```
 
