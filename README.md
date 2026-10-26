@@ -53,7 +53,7 @@ Edit your `config.json` file. Here is an example to get started:
     "TEMP_NOTIFICATION_MS": 30000, <-- how often to check temperature notifications
     "SENSORS_UPDATE_MS": 1000, <-- how often to update sensor data
     "METRICS_UPDATE_MS": 60000, <-- how often to print metrics for the webapp
-    "showTempTierLabels": false, <-- show the tier name ("Idle", "Normal load", ...) next to the coloured dot
+    "SHOW_TEMP_TIER_LABELS": false, <-- show the tier name ("Idle", "Normal load", ...) next to the coloured dot
     "SENSORS": {
         "BAT0_acpi_0__ACPI_interface__curr1": {
           "alias": "BAT0 acpi 0 (ACPI interface) curr1",
