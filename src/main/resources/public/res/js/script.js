@@ -369,25 +369,10 @@ function paintHeat(cell, time, sensor, threshold) {
         cell.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${0.65 * ratio})`;
         cell.dataset.tier = tier.key;
     } else {
-        cell.style.backgroundColor = lerpColor(parseColor(token('--heat-start-color')),
-            parseColor(token('--heat-end-color')), ratio);
+        const [r, g, b] = parseColor(token('--heat-end-color'));
+        cell.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${0.65 * ratio})`;
         delete cell.dataset.tier;
     }
-}
-
-/**
- * Linearly interpolates between two colors.
- * @param {Array} color1 - [r, g, b]
- * @param {Array} color2 - [r, g, b]
- * @param {number} t - Fraction (0.0 to 1.0)
- * @returns {string} - "rgb(r, g, b)"
- */
-function lerpColor(color1, color2, t) {
-    const r = Math.round(color1[0] + (color2[0] - color1[0]) * t);
-    const g = Math.round(color1[1] + (color2[1] - color1[1]) * t);
-    const b = Math.round(color1[2] + (color2[2] - color1[2]) * t);
-
-    return `rgb(${r}, ${g}, ${b})`;
 }
 
 /**

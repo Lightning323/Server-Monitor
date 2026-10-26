@@ -306,14 +306,15 @@ function clearData(chart) {
 
 function updateChartTier(chart, value) {
     const tier = value == null ? null : getTemperatureTier(chart._selectedSensor, value);
+    const showTier = !!tier && chart._labelLatestDataPoint;
 
-    chart._tierDot.hidden = !tier;
-    if (tier) {
+    chart._tierDot.hidden = !showTier;
+    if (showTier) {
         chart._tierDot.dataset.tier = tier.key;
         chart._tierDot.title = tier.label;
     }
 
-    const showLabel = !!tier && areTierLabelsEnabled();
+    const showLabel = showTier && areTierLabelsEnabled();
     chart._tierLabel.hidden = !showLabel;
     chart._tierLabel.textContent = showLabel ? tier.label : "";
 }

@@ -15,7 +15,6 @@
     --series-2-color: red;
     --series-3-color: green;
     --series-4-color: purple;
-    --heat-start-color: #ffffff;
     --heat-end-color: #a896e6;
     --temp-tier-idle: #2f6fed;
     --temp-tier-normal: #2e9e5b;
@@ -43,7 +42,6 @@
     --series-2-color: #ff7b72;
     --series-3-color: #7ee787;
     --series-4-color: #d2a8ff;
-    --heat-start-color: #212529;
     --heat-end-color: #a896e6;
     --temp-tier-idle: #6ea8fe;
     --temp-tier-normal: #7ee787;
@@ -189,13 +187,13 @@ table [data-bs-toggle="collapse"] tr td {
 }
 
 .chart-sensor-label {
-    padding-right: 20px;
+    padding-right: 15px;
 }
 
 .temp-tier-dot {
     display: inline-block;
-    width: 9px;
-    height: 9px;
+    width: 12px;
+    height: 12px;
     flex: 0 0 auto;
     border-radius: 50%;
     margin-right: 5px;
@@ -279,6 +277,9 @@ table [data-bs-toggle="collapse"] tr td {
     .chartWrapper {
         background-color: rgb(0 0 0 / 36%);
     }
+    #timeOverTempTable tr{
+        background-color: rgb(0 0 0 / 36%);
+    }
 }
 
 @media (max-width: 1200px) {
@@ -305,6 +306,15 @@ table [data-bs-toggle="collapse"] tr td {
 }
 
 @media (max-width: 800px) {
+    .tab-content {
+        padding: .5rem !important;
+    }
+
+    .chartWrapper {
+        padding: 8px;
+        margin: 2px;
+    }
+
     html {
         font-size: 85%; /* Reduce or increase as needed */
     }
