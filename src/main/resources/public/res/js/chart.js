@@ -1,5 +1,10 @@
 import uPlot from 'uplot';
 import {token, onThemeChange} from './theme.js';
+import {
+    areTierLabelsEnabled,
+    getSensorUnit,
+    getTemperatureTier
+} from './tempTiers.js';
 
 const charts = new Set();
 
@@ -51,6 +56,69 @@ const gapMarkersPlugin = {
                 ctx.restore();
             }
         ]
+    }
+};
+
+const tierTooltipPlugin = {
+    hooks: {
+        init: u => {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'chart-tooltip';
+            tooltip.hidden = true;
+            u.over.appendChild(tooltip);
+        },
+        setCursor: u => {
+            const tooltip = u.over.querySelector('.chart-tooltip');
+            if (!tooltip) return;
+
+            const {idx, left, top} = u.cursor;
+            if (idx == null || left == null || top == null || !u._realTimes) {
+                tooltip.hidden = true;
+                return;
+            }
+
+            const value = u.data[1]?.[idx];
+            const timestamp = u._realTimes[idx];
+            if (value == null || timestamp == null) {
+                tooltip.hidden = true;
+                return;
+            }
+
+            const tier = getTemperatureTier(u._selectedSensor, value);
+            const unit = getSensorUnit(u._selectedSensor);
+            const time = new Date(timestamp * 1000).toLocaleString();
+
+            tooltip.innerHTML = '';
+            const timeElement = document.createElement('div');
+            timeElement.className = 'chart-tooltip-time';
+            timeElement.textContent = time;
+
+            const valueElement = document.createElement('div');
+            valueElement.className = 'chart-tooltip-value';
+            valueElement.append(document.createTextNode(`${value}${unit ? ' ' + unit : ''}`));
+
+            if (tier) {
+                const dot = document.createElement('span');
+                dot.className = 'temp-tier-dot';
+                dot.dataset.tier = tier.key;
+                valueElement.append(' ', dot, ` ${tier.label}`);
+            }
+
+            tooltip.append(timeElement, valueElement);
+            tooltip.hidden = false;
+
+            const padding = 12;
+            let x = left + padding;
+            let y = top + padding;
+
+            if (x + tooltip.offsetWidth > u.over.clientWidth)
+                x = left - tooltip.offsetWidth - padding;
+            if (y + tooltip.offsetHeight > u.over.clientHeight)
+                y = top - tooltip.offsetHeight - padding;
+
+            tooltip.style.left = `${Math.max(0, x)}px`;
+            tooltip.style.top = `${Math.max(0, y)}px`;
+        }
     }
 };
 
@@ -112,7 +180,7 @@ function setupChart(container, {
             x: {},
             y: {min: yMin, max: yMax}
         },
-        plugins: [gapMarkersPlugin],
+        plugins: [gapMarkersPlugin, tierTooltipPlugin],
         axes: [{
             values: (u, splits) =>
                 splits.map(i => {
@@ -163,10 +231,28 @@ function setupChart(container, {
     chart._labelLatestDataPoint = latestDataPoint;
 
     const canvasLabel2 = document.createElement("span");
-    canvasLabel2.innerText = "";
     canvasLabel2.classList.add("chart-label2");
+
+    const canvasLabel2Text = document.createElement("span");
+    canvasLabel2Text.className = "chart-sensor-label";
+    canvasLabel2.appendChild(canvasLabel2Text);
+
+
+    const tierDot = document.createElement("span");
+    tierDot.className = "temp-tier-dot";
+    tierDot.hidden = true;
+    canvasLabel2.appendChild(tierDot);
+
+    const tierLabel = document.createElement("span");
+    tierLabel.className = "temp-tier-label";
+    tierLabel.hidden = true;
+    canvasLabel2.appendChild(tierLabel);
+
     wrapper.appendChild(canvasLabel2);
     chart._canvasLabel2 = canvasLabel2;
+    chart._canvasLabel2Text = canvasLabel2Text;
+    chart._tierDot = tierDot;
+    chart._tierLabel = tierLabel;
 
     // 4. Store the reference directly on the element the Observer watches
     // We observe the 'chartTarget' div
@@ -214,7 +300,22 @@ function clearData(chart) {
     chart._realTimes = [];
     chart._breaks = [];
     chart._canvasLabel.innerText = "";
+    updateChartTier(chart, null);
     resizeChart(chart);
+}
+
+function updateChartTier(chart, value) {
+    const tier = value == null ? null : getTemperatureTier(chart._selectedSensor, value);
+
+    chart._tierDot.hidden = !tier;
+    if (tier) {
+        chart._tierDot.dataset.tier = tier.key;
+        chart._tierDot.title = tier.label;
+    }
+
+    const showLabel = !!tier && areTierLabelsEnabled();
+    chart._tierLabel.hidden = !showLabel;
+    chart._tierLabel.textContent = showLabel ? tier.label : "";
 }
 
 function toNumber(value) {
@@ -293,6 +394,7 @@ function updateDataBatch(chart, timestamps, values) {
     }
 
     chart.setData([indices, vals]);
+    updateChartTier(chart, vals[vals.length - 1]);
     resizeChart(chart);
 }
 
@@ -317,7 +419,7 @@ function setChartShown(chart, isVisible) {
 
 function updateChartLabel(chart, newLabel) {
     if (newLabel === undefined || newLabel === null) return;
-    chart._canvasLabel2.innerText = newLabel;
+    chart._canvasLabel2Text.innerText = newLabel;
     if (!isChartEmpty(chart)) chart.redraw();
 }
 

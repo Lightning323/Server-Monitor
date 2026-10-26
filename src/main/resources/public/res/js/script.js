@@ -3,6 +3,7 @@ import {
     setupChart, updateDataBatch, clearData, updateChartLabel, isChartEmpty, setChartShown
 } from './chart.js';
 import {token, onThemeChange, seriesColor, parseColor} from './theme.js';
+import {getTemperatureTier, setSensorConfigs} from './tempTiers.js';
 
 let sensorAliases = {};
 let tempratureSensors = [];
@@ -14,6 +15,7 @@ function aliasedName(sensorID) {
 
 PacketRegistry.register("SensorPropertiesPacket", (payload) => {
     // console.log("SensorPropertiesPacket", payload);
+    setSensorConfigs(payload.sensors, payload.showTempTierLabels);
     Object.entries(payload.sensors).forEach(([key, sensor]) => {
         sensorAliases[key] = sensor.alias;
 
@@ -91,18 +93,37 @@ let sensorKeys;
 function updateDropdown(items, dropdownElement, chart, historyChart) {
     const dropdown = dropdownElement.querySelector('.dropdown-menu');
     dropdown.innerHTML = '';
-    dropdown.innerHTML = items.map(item => `<li><a class="dropdown-item" href="#" data-sensor="${item}">${aliasedName(item)}</a></li>`)
+    dropdown.innerHTML = items.map(item => `<li><a class="dropdown-item" href="#" data-sensor="${item}"><span class="temp-tier-dot" hidden></span>${aliasedName(item)}</a></li>`)
         .join('');
     dropdown.innerHTML += `<li><a class="dropdown-item" href="#">None</a></li>`;
     dropdown.querySelectorAll('.dropdown-item').forEach(item => {
         item.addEventListener('click', (event) => {
-            var key = event.target.getAttribute("data-sensor");
+            var key = event.currentTarget.getAttribute("data-sensor");
             selectSensor(key, dropdownElement, chart, historyChart);
             saveLocalStorage();
         });
     });
 }
 
+
+function updateDropdownTierDots(dumps) {
+    const latest = dumps[dumps.length - 1];
+    if (!latest) return;
+
+    document.querySelectorAll('.dropdown-item[data-sensor]').forEach(item => {
+        const dot = item.querySelector('.temp-tier-dot');
+        if (!dot) return;
+
+        const sensor = item.getAttribute('data-sensor');
+        const tier = getTemperatureTier(sensor, latest.sensors[sensor]);
+
+        dot.hidden = !tier;
+        if (tier) {
+            dot.dataset.tier = tier.key;
+            dot.title = tier.label;
+        }
+    });
+}
 
 function loadLocalStorage() {
     selectSensor(localStorage.getItem('sensorSetting1'), dropdown1, chart1, historyChart1);
@@ -262,6 +283,7 @@ PacketRegistry.register("SensorDumpPacket", (payload) => {
         updateLiveChart(chart2, payload.dumps);
         updateLiveChart(chart3, payload.dumps);
         updateLiveChart(chart4, payload.dumps);
+        updateDropdownTierDots(payload.dumps);
     }
 });
 
@@ -296,7 +318,7 @@ customTempThreshold.addEventListener("input", () => {
 });
 
 onThemeChange(() => {
-    timeOverTempCells.forEach(({cell, time}) => paintHeat(cell, time));
+    timeOverTempCells.forEach(({cell, time, sensor, threshold}) => paintHeat(cell, time, sensor, threshold));
 });
 
 PacketRegistry.register("TimeOverTempPacket", (payload) => {
@@ -317,30 +339,40 @@ function renderSensorRow(sensor, timeOverTemp, tableBody) {
     // Create threshold columns
     const customCell = document.createElement('td');
     row.appendChild(customCell);
-    customTempEditElements.push((threshold) => setCellTime(customCell, timeOverTemp[threshold]));
-    setCellTime(customCell, timeOverTemp[customTempThreshold.value]);
+    customTempEditElements.push((threshold) => setCellTime(customCell, timeOverTemp[threshold], sensor, threshold));
+    setCellTime(customCell, timeOverTemp[customTempThreshold.value], sensor, customTempThreshold.value);
 
     const thresholds = [45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115];
     thresholds.forEach(threshold => {
         const cell = document.createElement('td');
-        setCellTime(cell, timeOverTemp[threshold]);
+        setCellTime(cell, timeOverTemp[threshold], sensor, threshold);
         row.appendChild(cell);
     });
 
     tableBody.appendChild(row);
 }
 
-function setCellTime(cell, time) {
+function setCellTime(cell, time, sensor, threshold) {
     if (time === NaN || time === undefined) time = 0;
     cell.textContent = formatMillisToTime(time) || '-';
-    timeOverTempCells.push({cell, time});
-    paintHeat(cell, time);
+    timeOverTempCells.push({cell, time, sensor, threshold});
+    paintHeat(cell, time, sensor, threshold);
     return cell;
 }
 
-function paintHeat(cell, time) {
-    cell.style.backgroundColor = lerpColor(parseColor(token('--heat-start-color')),
-        parseColor(token('--heat-end-color')), Math.min(1, time / (2 * 60 * 60 * 1000)));
+function paintHeat(cell, time, sensor, threshold) {
+    const tier = getTemperatureTier(sensor, threshold);
+    const ratio = Math.min(1, time / (2 * 60 * 60 * 1000));
+
+    if (tier) {
+        const [r, g, b] = parseColor(token(tier.colorToken));
+        cell.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${0.65 * ratio})`;
+        cell.dataset.tier = tier.key;
+    } else {
+        cell.style.backgroundColor = lerpColor(parseColor(token('--heat-start-color')),
+            parseColor(token('--heat-end-color')), ratio);
+        delete cell.dataset.tier;
+    }
 }
 
 /**

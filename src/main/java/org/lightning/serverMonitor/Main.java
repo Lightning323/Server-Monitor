@@ -58,7 +58,7 @@ public class Main {
                 super.onConnect(ctx);
                 sendPacket(ctx, new ServerInfoPacket(APP_VERSION, Main.config.SERVER_NAME));
                 sendPacket(ctx, Platform.SINGLETON.getSystemInfo());
-                sendPacket(ctx, new SensorPropertiesPacket(config.SENSORS));
+                sendPacket(ctx, new SensorPropertiesPacket(config.SENSORS, config.showTempTierLabels));
                 sendPacket(ctx, new SensorDumpPacket(lastNSamples));
 //                sendPacket(ctx, new SensorsSelectedPacket(config.SELECTED_SENSORS));
             }
@@ -130,7 +130,7 @@ public class Main {
             lastTempNotification = System.currentTimeMillis();
             sensorData.forEachSensor((sensor, value) -> {
                 Config.SensorConfigProperty sensorConfigProperty = Main.config.SENSORS.get(sensor);
-                if (sensorConfigProperty != null && sensorConfigProperty.notifyTemp()) {
+                if (sensorConfigProperty != null) {
                     double numVal = StringUtils.stringToNumber(value);
                     if (numVal > sensorConfigProperty.notificationThreshold()) {
                         LOGGER.notification(sensorConfigProperty.alias() + " is above " + sensorConfigProperty.notificationThreshold() + " (" + value + ")");

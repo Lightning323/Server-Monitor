@@ -30,16 +30,24 @@ public class Config {
     public TreeMap<String, SensorConfigProperty> SENSORS = new TreeMap<>();
     public long DATABASE_RECORD_WRITE_INTERVAL_MS = 5 * 60 * 1000;
     public List<TaskbarSensor> TASKBAR_SENSORS = new ArrayList<>();
+    public boolean showTempTierLabels = true;
 
-    public record TaskbarSensor(String alias, String sensorId){};
+    public record TaskbarSensor(String alias, String sensorId) {
+    }
 
     public record SensorConfigProperty(
             String alias,
             String unit,
-            int notificationThreshold
+            boolean showTempTiers,
+            int temperature_idle,          // Up to ~45°C - 50°C
+            int temperature_normal_load,   // Normal gaming/workload average (Edge)
+            int temperature_heavy_load,    // Stress testing / warm air-cooling limit
+            int temperature_warning,       // Approaching unsafe territory
+            int temperature_throttling    // Hardware thermal throttling limit (Junction/Hotspot)
     ) {
-        public boolean notifyTemp() {
-            return notificationThreshold > 0;
+
+        public int notificationThreshold(){
+            return temperature_heavy_load() + temperature_warning() / 2;
         }
 
         public boolean isTempSensor() {
@@ -90,7 +98,8 @@ public class Config {
             alias = Arrays.stream(alias.split("\\s+"))
                     .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
                     .collect(Collectors.joining(" "));
-            config.SENSORS.put(sensorName, new SensorConfigProperty(alias, unit, -1));
+            config.SENSORS.put(sensorName, new SensorConfigProperty(alias, unit,
+                    false, 0,0,0,0,0));
         });
         save(config); // Save defaults if no file
         return config;

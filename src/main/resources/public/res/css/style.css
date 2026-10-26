@@ -17,6 +17,14 @@
     --series-4-color: purple;
     --heat-start-color: #ffffff;
     --heat-end-color: #a896e6;
+    --temp-tier-idle: #2f6fed;
+    --temp-tier-normal: #2e9e5b;
+    --temp-tier-heavy: #c99a06;
+    --temp-tier-warning: #e07b00;
+    --temp-tier-throttling: #d32f2f;
+    --chart-tooltip-bg: rgba(255, 255, 255, 0.97);
+    --chart-tooltip-text: #212529;
+    --chart-tooltip-border: rgba(0, 0, 0, 0.15);
 }
 
 /* Dark palette. Bootstrap swaps the components itself off [data-bs-theme], this
@@ -37,6 +45,14 @@
     --series-4-color: #d2a8ff;
     --heat-start-color: #212529;
     --heat-end-color: #a896e6;
+    --temp-tier-idle: #6ea8fe;
+    --temp-tier-normal: #7ee787;
+    --temp-tier-heavy: #e3b341;
+    --temp-tier-warning: #ff9f43;
+    --temp-tier-throttling: #ff7b72;
+    --chart-tooltip-bg: rgba(33, 37, 41, 0.97);
+    --chart-tooltip-text: #f8f9fa;
+    --chart-tooltip-border: rgba(255, 255, 255, 0.15);
 }
 
 .monitor-chart {
@@ -167,7 +183,86 @@ table [data-bs-toggle="collapse"] tr td {
     user-select: none;
     pointer-events: none;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
 
+.chart-sensor-label {
+    padding-right: 20px;
+}
+
+.temp-tier-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.chart-label2 .temp-tier-dot {
+    margin-right: 0;
+}
+
+.temp-tier-dot[hidden] {
+    display: none;
+}
+
+.temp-tier-dot[data-tier="idle"] {
+    background-color: var(--temp-tier-idle);
+}
+
+.temp-tier-dot[data-tier="normal"] {
+    background-color: var(--temp-tier-normal);
+}
+
+.temp-tier-dot[data-tier="heavy"] {
+    background-color: var(--temp-tier-heavy);
+}
+
+.temp-tier-dot[data-tier="warning"] {
+    background-color: var(--temp-tier-warning);
+}
+
+.temp-tier-dot[data-tier="throttling"] {
+    background-color: var(--temp-tier-throttling);
+}
+
+.temp-tier-label {
+    font-size: 0.85em;
+    opacity: 0.85;
+}
+
+.chart-tooltip {
+    position: absolute;
+    z-index: 200;
+    pointer-events: none;
+    padding: 6px 9px;
+    border-radius: 6px;
+    border: 1px solid var(--chart-tooltip-border);
+    background-color: var(--chart-tooltip-bg);
+    color: var(--chart-tooltip-text);
+    font-size: 0.85em;
+    line-height: 1.4;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.chart-tooltip-time {
+    opacity: 0.8;
+}
+
+.chart-tooltip-value {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.chart-tooltip-value .temp-tier-dot {
+    margin: 0 4px;
 }
 
 .chart-target {
