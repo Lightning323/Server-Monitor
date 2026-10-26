@@ -300,10 +300,13 @@ function updateLiveChart(chart, dumps) {
     }
 }
 
+const historyCharts = [historyChart1, historyChart2, historyChart3, historyChart4];
+
 //We recieve history here
 PacketRegistry.register("SensorHistoryPacket", (payload) => {
-    var sensor = payload.sensor;
-    if (historyChart2._selectedSensor === sensor) updateHistoryChart(historyChart1, payload); else if (historyChart3._selectedSensor === sensor) updateHistoryChart(historyChart2, payload); else if (historyChart4._selectedSensor === sensor) updateHistoryChart(historyChart3, payload); else updateHistoryChart(historyChart4, payload);
+    historyCharts
+        .filter(chart => chart._selectedSensor === payload.sensor)
+        .forEach(chart => updateHistoryChart(chart, payload));
 });
 
 const timeOverTempTableBody = document.getElementById("timeOverTempTable");

@@ -30,7 +30,7 @@ public class Config {
     public TreeMap<String, SensorConfigProperty> SENSORS = new TreeMap<>();
     public long DATABASE_RECORD_WRITE_INTERVAL_MS = 5 * 60 * 1000;
     public List<TaskbarSensor> TASKBAR_SENSORS = new ArrayList<>();
-    public boolean showTempTierLabels = true;
+    public boolean SHOW_TEMP_TIER_LABELS = true;
 
     public record TaskbarSensor(String alias, String sensorId) {
     }

@@ -58,7 +58,7 @@ public class Main {
                 super.onConnect(ctx);
                 sendPacket(ctx, new ServerInfoPacket(APP_VERSION, Main.config.SERVER_NAME));
                 sendPacket(ctx, Platform.SINGLETON.getSystemInfo());
-                sendPacket(ctx, new SensorPropertiesPacket(config.SENSORS, config.showTempTierLabels));
+                sendPacket(ctx, new SensorPropertiesPacket(config.SENSORS, config.SHOW_TEMP_TIER_LABELS));
                 sendPacket(ctx, new SensorDumpPacket(lastNSamples));
 //                sendPacket(ctx, new SensorsSelectedPacket(config.SELECTED_SENSORS));
             }
