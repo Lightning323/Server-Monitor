@@ -190,6 +190,31 @@ table [data-bs-toggle="collapse"] tr td {
     padding-right: 15px;
 }
 
+.temp-tier-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: -2px -4px;
+    padding: 2px 4px;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.temp-tier-toggle[hidden] {
+    display: none;
+}
+
+.temp-tier-toggle:focus-visible {
+    outline: 2px solid var(--main-color);
+    outline-offset: 2px;
+}
+
 .temp-tier-dot {
     display: inline-block;
     width: 12px;
@@ -261,6 +286,51 @@ table [data-bs-toggle="collapse"] tr td {
 
 .chart-tooltip-value .temp-tier-dot {
     margin: 0 4px;
+}
+
+.tier-threshold-tooltip {
+    position: absolute;
+    z-index: 200;
+    pointer-events: none;
+    padding: 6px 9px;
+    border-radius: 6px;
+    border: 1px solid var(--chart-tooltip-border);
+    background-color: var(--chart-tooltip-bg);
+    color: var(--chart-tooltip-text);
+    font-size: 0.85em;
+    line-height: 1.4;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tier-threshold-tooltip[hidden] {
+    display: none;
+}
+
+.tier-threshold-title {
+    margin-bottom: 4px;
+    font-weight: bold;
+    opacity: 0.8;
+}
+
+.tier-threshold-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tier-threshold-row + .tier-threshold-row {
+    margin-top: 2px;
+}
+
+.tier-threshold-row .temp-tier-dot {
+    margin-right: 0;
+}
+
+.tier-threshold-value {
+    margin-left: auto;
+    padding-left: 12px;
+    font-weight: bold;
 }
 
 .chart-target {

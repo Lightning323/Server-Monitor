@@ -51,6 +51,23 @@ function getTemperatureTier(sensorID, value) {
     return highestConfigured;
 }
 
+/**
+ * Returns only the tiers that have a usable threshold configured for a sensor,
+ * paired with the parsed bound. Used by the threshold tooltip.
+ */
+function getConfiguredTiers(sensorID) {
+    const config = sensorConfigs[sensorID];
+    if (!config || !config.showTempTiers) return [];
+
+    const tiers = [];
+    for (const tier of TEMPERATURE_TIERS) {
+        const bound = parseValue(config[tier.bound]);
+        if (bound === null || bound <= 0) continue;
+        tiers.push({...tier, bound});
+    }
+    return tiers;
+}
+
 function tierColor(tier) {
     return tier ? `var(${tier.colorToken})` : null;
 }
@@ -65,6 +82,7 @@ export {
     areTierLabelsEnabled,
     getSensorConfig,
     getTemperatureTier,
+    getConfiguredTiers,
     tierColor,
     getSensorUnit,
     parseValue

@@ -2,11 +2,105 @@ import uPlot from 'uplot';
 import {token, onThemeChange} from './theme.js';
 import {
     areTierLabelsEnabled,
+    getConfiguredTiers,
     getSensorUnit,
     getTemperatureTier
 } from './tempTiers.js';
 
 const charts = new Set();
+let openThresholdsChart = null;
+
+function hideTierThresholds(chart) {
+    if (!chart._tierThresholds) return;
+
+    chart._tierThresholds.hidden = true;
+    chart._tierToggle?.setAttribute('aria-expanded', 'false');
+    if (openThresholdsChart === chart) openThresholdsChart = null;
+}
+
+function renderTierThresholds(chart) {
+    const tooltip = chart._tierThresholds;
+    const sensor = chart._selectedSensor;
+    const unit = getSensorUnit(sensor);
+    const tiers = getConfiguredTiers(sensor);
+
+    tooltip.replaceChildren();
+
+    const title = document.createElement('div');
+    title.className = 'tier-threshold-title';
+    title.textContent = 'Temperature tiers';
+    tooltip.appendChild(title);
+
+    if (tiers.length === 0) {
+        const empty = document.createElement('div');
+        empty.textContent = 'No temperature thresholds configured.';
+        tooltip.appendChild(empty);
+        return;
+    }
+
+    for (const tier of tiers) {
+        const row = document.createElement('div');
+        row.className = 'tier-threshold-row';
+
+        const dot = document.createElement('span');
+        dot.className = 'temp-tier-dot';
+        dot.dataset.tier = tier.key;
+
+        const label = document.createElement('span');
+        label.textContent = tier.label;
+
+        const threshold = document.createElement('span');
+        threshold.className = 'tier-threshold-value';
+        threshold.textContent = `\u2264 ${tier.bound}${unit ? ` ${unit}` : ''}`;
+
+        row.append(dot, label, threshold);
+        tooltip.appendChild(row);
+    }
+}
+
+function positionTierThresholds(chart) {
+    const tooltip = chart._tierThresholds;
+    const anchor = chart._tierToggle.getBoundingClientRect();
+    const wrapper = chart._wrapper.getBoundingClientRect();
+    const gap = 6;
+
+    let left = anchor.left - wrapper.left;
+    let top = anchor.bottom - wrapper.top + gap;
+
+    if (left + tooltip.offsetWidth > chart._wrapper.clientWidth)
+        left = Math.max(0, chart._wrapper.clientWidth - tooltip.offsetWidth);
+
+    if (top + tooltip.offsetHeight > chart._wrapper.clientHeight)
+        top = anchor.top - wrapper.top - tooltip.offsetHeight - gap;
+
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${Math.max(0, top)}px`;
+}
+
+function showTierThresholds(chart) {
+    if (openThresholdsChart && openThresholdsChart !== chart)
+        hideTierThresholds(openThresholdsChart);
+
+    renderTierThresholds(chart);
+    chart._tierThresholds.hidden = false;
+    positionTierThresholds(chart);
+    chart._tierToggle.setAttribute('aria-expanded', 'true');
+    openThresholdsChart = chart;
+}
+
+function toggleTierThresholds(chart) {
+    if (chart._tierThresholds.hidden) showTierThresholds(chart);
+    else hideTierThresholds(chart);
+}
+
+document.addEventListener('click', event => {
+    if (event.target.closest('.temp-tier-toggle') || !openThresholdsChart) return;
+    hideTierThresholds(openThresholdsChart);
+});
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && openThresholdsChart) hideTierThresholds(openThresholdsChart);
+});
 
 const gapMarkersPlugin = {
     hooks: {
@@ -238,21 +332,39 @@ function setupChart(container, {
     canvasLabel2.appendChild(canvasLabel2Text);
 
 
+    const tierToggle = document.createElement("button");
+    tierToggle.type = "button";
+    tierToggle.className = "temp-tier-toggle";
+    tierToggle.hidden = true;
+    tierToggle.setAttribute("aria-label", "Show temperature tier thresholds");
+    tierToggle.setAttribute("aria-expanded", "false");
+
     const tierDot = document.createElement("span");
     tierDot.className = "temp-tier-dot";
     tierDot.hidden = true;
-    canvasLabel2.appendChild(tierDot);
+    tierToggle.appendChild(tierDot);
 
     const tierLabel = document.createElement("span");
     tierLabel.className = "temp-tier-label";
     tierLabel.hidden = true;
-    canvasLabel2.appendChild(tierLabel);
+    tierToggle.appendChild(tierLabel);
 
+    canvasLabel2.appendChild(tierToggle);
     wrapper.appendChild(canvasLabel2);
     chart._canvasLabel2 = canvasLabel2;
     chart._canvasLabel2Text = canvasLabel2Text;
+    chart._tierToggle = tierToggle;
     chart._tierDot = tierDot;
     chart._tierLabel = tierLabel;
+
+    const tierThresholds = document.createElement("div");
+    tierThresholds.className = "tier-threshold-tooltip";
+    tierThresholds.setAttribute("role", "tooltip");
+    tierThresholds.hidden = true;
+    wrapper.appendChild(tierThresholds);
+    chart._tierThresholds = tierThresholds;
+
+    tierToggle.addEventListener("click", () => toggleTierThresholds(chart));
 
     // 4. Store the reference directly on the element the Observer watches
     // We observe the 'chartTarget' div
@@ -260,6 +372,7 @@ function setupChart(container, {
     chart._containerDiv = container;
     chart._height = height;
     chart._target = chartTarget;
+    chart._wrapper = wrapper;
     chart._realTimes = [];
     chart._breaks = [];
     ro.observe(chartTarget);
@@ -308,10 +421,13 @@ function updateChartTier(chart, value) {
     const tier = value == null ? null : getTemperatureTier(chart._selectedSensor, value);
     const showTier = !!tier && chart._labelLatestDataPoint;
 
+    chart._tierToggle.hidden = !showTier;
     chart._tierDot.hidden = !showTier;
     if (showTier) {
         chart._tierDot.dataset.tier = tier.key;
         chart._tierDot.title = tier.label;
+    } else {
+        hideTierThresholds(chart);
     }
 
     const showLabel = showTier && areTierLabelsEnabled();
