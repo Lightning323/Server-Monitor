@@ -31,6 +31,7 @@ PacketRegistry.register("SensorPropertiesPacket", (payload) => {
 
 
 PacketRegistry.register("ServerInfoPacket", (payload) => {
+    document.title = payload.serverName +" | Sensor Monitor";
     document.getElementById('server-name').innerText = payload.serverName;
     document.getElementById('app-version').innerText = payload.appVersion;
 });

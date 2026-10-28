@@ -20,17 +20,18 @@ import java.util.stream.Collectors;
 import static org.lightning.serverMonitor.Main.LOGGER;
 
 public class Config {
+
     public String SERVER_NAME = "Server";
     public int WEBAPP_PORT = 3000;
-
     public String DISCORD_WEBHOOK_URL = "";
     public long TEMP_NOTIFICATION_MS = 30 * 1000;
     public int SENSORS_UPDATE_MS = 1000;
     public long METRICS_UPDATE_MS = 1 * 60 * 1000;
-    public TreeMap<String, SensorConfigProperty> SENSORS = new TreeMap<>();
     public long DATABASE_RECORD_WRITE_INTERVAL_MS = 5 * 60 * 1000;
-    public List<TaskbarSensor> TASKBAR_SENSORS = new ArrayList<>();
     public boolean SHOW_TEMP_TIER_LABELS = true;
+    //----
+    public TreeMap<String, SensorConfigProperty> SENSORS = new TreeMap<>();
+    public List<TaskbarSensor> TASKBAR_SENSORS = new ArrayList<>();
 
     public record TaskbarSensor(String alias, String sensorId) {
     }

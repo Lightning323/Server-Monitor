@@ -43,7 +43,7 @@ def main():
     indicator.set_status(appindicator.IndicatorStatus.ACTIVE)
 
     # Initial placeholder text so space is reserved immediately on launch
-    indicator.set_label("Initializing...", "00% 00°C 0000RPM")
+    indicator.set_label("", "")
 
     menu = Gtk.Menu()
 
