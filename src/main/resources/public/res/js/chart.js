@@ -387,10 +387,13 @@ function setupChart(container, {
  * the already-resolved getters keeps the defaults and tracks the palette.
  */
 function applyAxisColors(chart) {
-    const axis = chart.axes[0];
-    axis.stroke = () => token('--chart-axis-color');
-    axis.grid.stroke = () => token('--chart-grid-color');
-    axis.ticks.stroke = () => token('--chart-grid-color');
+    for (let i = 0; i < chart.axes.length; i++) {
+        const axis = chart.axes[i];
+        if (!axis) continue;
+        axis.stroke = () => token('--chart-axis-color');
+        axis.grid.stroke = () => token('--chart-grid-color');
+        axis.ticks.stroke = () => token('--chart-grid-color');
+    }
 }
 
 // Canvas colours are re-read from the tokens above, but the legend swatches are
