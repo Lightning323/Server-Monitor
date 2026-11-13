@@ -89,11 +89,11 @@ function formatSensorValue(sensorID, value) {
     const num = parseValue(str);
     if (num === null) return str;
 
-    const numericPart = str.match(/-?\d+(\.\d+)?/)?.[0] ?? str;
+    // const numericPart = str.match(/-?\d+(\.\d+)?/)?.[0] ?? str;
     const max = parseValue(config.percentageMaxValue);
-    if (max === null || max <= 0) return numericPart;
+    if (max === null || max <= 0) return str;
 
-    return `${numericPart} (${Math.round((num / max) * 100)}%)`;
+    return `${str} (${Math.round((num / max) * 100)}%)`;
 }
 
 export {
