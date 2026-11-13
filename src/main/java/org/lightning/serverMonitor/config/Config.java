@@ -39,6 +39,8 @@ public class Config {
     public record SensorConfigProperty(
             String alias,
             String unit,
+            boolean showPercentage,
+            int percentageMaxValue,
             boolean showTempTiers,
             int temperature_idle,          // Up to ~45°C - 50°C
             int temperature_normal_load,   // Normal gaming/workload average (Edge)
@@ -100,7 +102,9 @@ public class Config {
                     .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
                     .collect(Collectors.joining(" "));
             config.SENSORS.put(sensorName, new SensorConfigProperty(alias, unit,
-                    false, 0,0,0,0,0));
+                    false, 0,
+                    false, 0,0,0,0,0
+            ));
         });
         save(config); // Save defaults if no file
         return config;

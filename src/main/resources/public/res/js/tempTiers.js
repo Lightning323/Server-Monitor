@@ -76,6 +76,26 @@ function getSensorUnit(sensorID) {
     return sensorConfigs[sensorID]?.unit || '';
 }
 
+/**
+ * Formats a raw sensor reading for display. When the sensor config has
+ * showPercentage enabled, the unit is stripped and the reading is shown as
+ * a percentage of percentageMaxValue, e.g. "32 (50%)".
+ */
+function formatSensorValue(sensorID, value) {
+    const config = sensorConfigs[sensorID];
+    const str = String(value ?? '');
+    if (!config || !config.showPercentage) return str;
+
+    const num = parseValue(str);
+    if (num === null) return str;
+
+    const numericPart = str.match(/-?\d+(\.\d+)?/)?.[0] ?? str;
+    const max = parseValue(config.percentageMaxValue);
+    if (max === null || max <= 0) return numericPart;
+
+    return `${numericPart} (${Math.round((num / max) * 100)}%)`;
+}
+
 export {
     TEMPERATURE_TIERS,
     setSensorConfigs,
@@ -85,5 +105,6 @@ export {
     getConfiguredTiers,
     tierColor,
     getSensorUnit,
+    formatSensorValue,
     parseValue
 };

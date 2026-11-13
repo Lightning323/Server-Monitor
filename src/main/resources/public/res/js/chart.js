@@ -3,8 +3,10 @@ import {token, onThemeChange} from './theme.js';
 import {
     areTierLabelsEnabled,
     getConfiguredTiers,
+    getSensorConfig,
     getSensorUnit,
-    getTemperatureTier
+    getTemperatureTier,
+    formatSensorValue
 } from './tempTiers.js';
 
 const charts = new Set();
@@ -189,7 +191,10 @@ const tierTooltipPlugin = {
 
             const valueElement = document.createElement('div');
             valueElement.className = 'chart-tooltip-value';
-            valueElement.append(document.createTextNode(`${value}${unit ? ' ' + unit : ''}`));
+            const displayValue = getSensorConfig(u._selectedSensor)?.showPercentage
+                ? formatSensorValue(u._selectedSensor, value)
+                : `${value}${unit ? ' ' + unit : ''}`;
+            valueElement.append(document.createTextNode(displayValue));
 
             if (tier) {
                 const dot = document.createElement('span');
@@ -466,7 +471,7 @@ function updateDataBatch(chart, timestamps, values) {
     // console.log("OUTPUT____",timestamps);
     let [indices, vals] = chart.data;
     if (chart._canvasLabel && chart._labelLatestDataPoint) {
-        chart._canvasLabel.innerText = values[values.length - 1];
+        chart._canvasLabel.innerText = formatSensorValue(chart._selectedSensor, values[values.length - 1]);
     }
     // Initialize timestamp storage if needed
     if (!chart._realTimes) {
