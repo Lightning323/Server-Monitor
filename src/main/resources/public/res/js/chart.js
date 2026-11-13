@@ -254,6 +254,7 @@ function setupChart(container, {
     yMin,
     yMax,
     maxPoints,
+    windowSeconds,
     height = 300,
     latestDataPoint = false
 }) {
@@ -318,6 +319,7 @@ function setupChart(container, {
 
     const chart = new uPlot(opts, [[], []], chartTarget);
     chart.maxPoints = maxPoints;
+    chart._windowSeconds = windowSeconds;
     applyAxisColors(chart);
 
 
@@ -503,6 +505,25 @@ function updateDataBatch(chart, timestamps, values) {
     // Append values
     vals.push(...newVals);
 
+    // Trim points older than the configured time window (live charts only)
+    const windowSeconds = chart._windowSeconds;
+    if (windowSeconds > 0 && chart._realTimes.length > 1) {
+        const cutoff = chart._realTimes[chart._realTimes.length - 1] - windowSeconds;
+        let removeCount = 0;
+        while (removeCount < chart._realTimes.length - 1 && chart._realTimes[removeCount] < cutoff) {
+            removeCount++;
+        }
+        if (removeCount > 0) {
+            chart._realTimes.splice(0, removeCount);
+            vals.splice(0, removeCount);
+            if (chart._breaks?.length) {
+                chart._breaks = chart._breaks
+                    .map(brk => ({...brk, idx: brk.idx - removeCount}))
+                    .filter(brk => brk.idx > 0);
+            }
+        }
+    }
+
     // Rebuild index axis (0,1,2,3...)
     const totalPoints = vals.length;
     indices = Array.from({length: totalPoints}, (_, i) => i);
@@ -513,6 +534,11 @@ function updateDataBatch(chart, timestamps, values) {
 
         chart._realTimes.splice(0, diff);
         vals.splice(0, diff);
+        if (chart._breaks?.length) {
+            chart._breaks = chart._breaks
+                .map(brk => ({...brk, idx: brk.idx - diff}))
+                .filter(brk => brk.idx > 0);
+        }
 
         // Rebuild indices after trimming
         indices = Array.from({length: vals.length}, (_, i) => i);
@@ -520,6 +546,30 @@ function updateDataBatch(chart, timestamps, values) {
 
     chart.setData([indices, vals]);
     updateChartTier(chart, vals[vals.length - 1]);
+    resizeChart(chart);
+}
+
+function trimChartToWindow(chart) {
+    const windowSeconds = chart._windowSeconds;
+    if (!(windowSeconds > 0) || !chart._realTimes || chart._realTimes.length <= 1) return;
+
+    const vals = chart.data[1];
+    const cutoff = chart._realTimes[chart._realTimes.length - 1] - windowSeconds;
+    let removeCount = 0;
+    while (removeCount < chart._realTimes.length - 1 && chart._realTimes[removeCount] < cutoff) {
+        removeCount++;
+    }
+    if (removeCount === 0) return;
+
+    chart._realTimes.splice(0, removeCount);
+    vals.splice(0, removeCount);
+    if (chart._breaks?.length) {
+        chart._breaks = chart._breaks
+            .map(brk => ({...brk, idx: brk.idx - removeCount}))
+            .filter(brk => brk.idx > 0);
+    }
+
+    chart.setData([Array.from({length: vals.length}, (_, i) => i), vals]);
     resizeChart(chart);
 }
 
@@ -548,4 +598,4 @@ function updateChartLabel(chart, newLabel) {
     if (!isChartEmpty(chart)) chart.redraw();
 }
 
-export {setupChart, updateDataBatch, clearData, updateChartLabel, isChartEmpty, setChartShown};
+export {setupChart, updateDataBatch, clearData, updateChartLabel, isChartEmpty, setChartShown, trimChartToWindow};

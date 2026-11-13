@@ -5,5 +5,6 @@ import org.lightning.serverMonitor.config.Config;
 import java.util.Map;
 
 public record SensorPropertiesPacket(Map<String, Config.SensorConfigProperty> sensors,
-                                     boolean showTempTierLabels) implements WsPacket {
+                                     boolean showTempTierLabels,
+                                     int graphTimeWindowSeconds) implements WsPacket {
 }

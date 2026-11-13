@@ -1,6 +1,6 @@
 import {connect, PacketRegistry} from './connection.js';
 import {
-    setupChart, updateDataBatch, clearData, updateChartLabel, isChartEmpty, setChartShown
+    setupChart, updateDataBatch, clearData, updateChartLabel, isChartEmpty, setChartShown, trimChartToWindow
 } from './chart.js';
 import {token, onThemeChange, seriesColor, parseColor} from './theme.js';
 import {getTemperatureTier, setSensorConfigs} from './tempTiers.js';
@@ -8,6 +8,8 @@ import {getTemperatureTier, setSensorConfigs} from './tempTiers.js';
 let sensorAliases = {};
 let tempratureSensors = [];
 let loadedProperties = false;
+let graphWindowSeconds = parseInt(localStorage.getItem('graphWindowSeconds'), 10);
+if (!graphWindowSeconds || graphWindowSeconds <= 0) graphWindowSeconds = 60;
 
 function aliasedName(sensorID) {
     return sensorAliases[sensorID] || sensorID;
@@ -16,6 +18,14 @@ function aliasedName(sensorID) {
 PacketRegistry.register("SensorPropertiesPacket", (payload) => {
     // console.log("SensorPropertiesPacket", payload);
     setSensorConfigs(payload.sensors, payload.showTempTierLabels);
+    const savedWindow = parseInt(localStorage.getItem('graphWindowSeconds'), 10);
+    if (savedWindow > 0) graphWindowSeconds = savedWindow;
+    else if (payload.graphTimeWindowSeconds > 0) graphWindowSeconds = payload.graphTimeWindowSeconds;
+    [chart1, chart2, chart3, chart4].forEach(c => {
+        c._windowSeconds = graphWindowSeconds;
+        trimChartToWindow(c);
+    });
+    graphWindowInput.value = graphWindowSeconds;
     Object.entries(payload.sensors).forEach(([key, sensor]) => {
         sensorAliases[key] = sensor.alias;
 
@@ -52,19 +62,21 @@ let dropdown2 = document.getElementById('sensor-dropdown-2');
 let dropdown3 = document.getElementById('sensor-dropdown-3');
 let dropdown4 = document.getElementById('sensor-dropdown-4');
 
-const lastNSamples = 250;
-let chart1 = setupChart(document.getElementById("sensorChart1"), {
-    color: seriesColor('--series-1-color'), maxPoints: lastNSamples, latestDataPoint: true
-});
-let chart2 = setupChart(document.getElementById("sensorChart2"), {
-    color: seriesColor('--series-2-color'), maxPoints: lastNSamples, latestDataPoint: true
-});
-let chart3 = setupChart(document.getElementById("sensorChart3"), {
-    color: seriesColor('--series-3-color'), maxPoints: lastNSamples, latestDataPoint: true
-});
-let chart4 = setupChart(document.getElementById("sensorChart4"), {
-    color: seriesColor('--series-4-color'), maxPoints: lastNSamples, latestDataPoint: true
-});
+const liveCharts = [
+    setupChart(document.getElementById("sensorChart1"), {
+        color: seriesColor('--series-1-color'), windowSeconds: graphWindowSeconds, latestDataPoint: true
+    }),
+    setupChart(document.getElementById("sensorChart2"), {
+        color: seriesColor('--series-2-color'), windowSeconds: graphWindowSeconds, latestDataPoint: true
+    }),
+    setupChart(document.getElementById("sensorChart3"), {
+        color: seriesColor('--series-3-color'), windowSeconds: graphWindowSeconds, latestDataPoint: true
+    }),
+    setupChart(document.getElementById("sensorChart4"), {
+        color: seriesColor('--series-4-color'), windowSeconds: graphWindowSeconds, latestDataPoint: true
+    })
+];
+const [chart1, chart2, chart3, chart4] = liveCharts;
 
 setChartShown(chart1, false);
 setChartShown(chart2, false);
@@ -165,6 +177,21 @@ function selectSensor(key, dropdownElement, chart, historyChart) {
         updateChartLabel(chart, aliasedName(chart._selectedSensor));
     }
 }
+
+const graphWindowInput = document.getElementById('graphWindowInput');
+graphWindowInput.addEventListener('change', () => {
+    const seconds = parseInt(graphWindowInput.value, 10);
+    if (seconds > 0) {
+        graphWindowSeconds = seconds;
+        localStorage.setItem('graphWindowSeconds', seconds);
+        [chart1, chart2, chart3, chart4].forEach(c => {
+            c._windowSeconds = seconds;
+            trimChartToWindow(c);
+        });
+    } else {
+        graphWindowInput.value = graphWindowSeconds;
+    }
+});
 
 const dateSelector = document.getElementById("dateInput");
 const today = new Date();

@@ -40,7 +40,6 @@ public class Main {
     private static ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private static final List<SensorDump> cachedHistory = new ArrayList<>();
     private static final List<SensorDump> lastNSamples = new ArrayList<>();
-    private static final int lastNSamplesSize = 250;
 
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
@@ -58,7 +57,7 @@ public class Main {
                 super.onConnect(ctx);
                 sendPacket(ctx, new ServerInfoPacket(APP_VERSION, Main.config.SERVER_NAME));
                 sendPacket(ctx, Platform.SINGLETON.getSystemInfo());
-                sendPacket(ctx, new SensorPropertiesPacket(config.SENSORS, config.SHOW_TEMP_TIER_LABELS));
+                sendPacket(ctx, new SensorPropertiesPacket(config.SENSORS, config.SHOW_TEMP_TIER_LABELS, config.GRAPH_TIME_WINDOW_SECONDS));
                 sendPacket(ctx, new SensorDumpPacket(lastNSamples));
 //                sendPacket(ctx, new SensorsSelectedPacket(config.SELECTED_SENSORS));
             }
@@ -80,7 +79,8 @@ public class Main {
                 SensorDump sensorData = SensorDump.read();
                 cachedHistory.add(sensorData);
                 lastNSamples.add(sensorData);
-                if (lastNSamples.size() > lastNSamplesSize) {
+                long graphCutoff = System.currentTimeMillis() - config.GRAPH_TIME_WINDOW_SECONDS * 1000L;
+                while (!lastNSamples.isEmpty() && lastNSamples.get(0).timestamp < graphCutoff) {
                     lastNSamples.remove(0);
                 }
 

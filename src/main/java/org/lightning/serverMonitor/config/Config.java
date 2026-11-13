@@ -29,6 +29,7 @@ public class Config {
     public long METRICS_UPDATE_MS = 1 * 60 * 1000;
     public long DATABASE_RECORD_WRITE_INTERVAL_MS = 5 * 60 * 1000;
     public boolean SHOW_TEMP_TIER_LABELS = true;
+    public int GRAPH_TIME_WINDOW_SECONDS = 60;
     //----
     public TreeMap<String, SensorConfigProperty> SENSORS = new TreeMap<>();
     public List<TaskbarSensor> TASKBAR_SENSORS = new ArrayList<>();
